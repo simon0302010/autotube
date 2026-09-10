@@ -1,6 +1,6 @@
 import { password, search, select } from "@inquirer/prompts";
 
-interface ModelInfo {
+export interface ModelInfo {
     id: string,
     name: string,
     created: number,
@@ -8,12 +8,12 @@ interface ModelInfo {
     description: string
 }
 
-interface ModelList {
+export interface ModelList {
     data: ModelInfo[],
     total_count: number
 }
 
-interface ApiSetup {
+export interface ApiSetup {
     baseUrl: string,
     apiKey: string,
     model: string

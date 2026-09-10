@@ -2,28 +2,51 @@
 
 import OpenAI, { APIError } from "openai";
 import { askProvider } from "./models";
+import { BoxRenderable, createCliRenderer, InputRenderable, TextRenderable } from "@opentui/core";
 
-const [apiSetup, models] = await askProvider();
+// this asks the user for api credentials and model id
+// const [apiSetup, models] = await askProvider();
 
-console.log("User selected: ", apiSetup.model);
+const renderer = await createCliRenderer({
+    exitOnCtrlC: true,
+    backgroundColor: "#1131E9",
+})
 
-const client = new OpenAI({
-    apiKey: apiSetup.apiKey,
-    baseURL: apiSetup.baseUrl
-});
+const panel = new BoxRenderable(renderer, {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#1131E9",
+    alignItems: "center",
+    justifyContent: "flex-end",
+})
 
-try {
-    const response = await client.responses.create({
-        model: "google/gemini-3.1-flash-lite",
-        instructions: "You are a helpful assistant.",
-        input: "Please tell me why Rust is better than Java."
-    });
+const promptBar = new BoxRenderable(renderer, {
+    width: "100%",
+    height: 3,
+    backgroundColor: "#142793",
+    alignSelf: "flex-end",
+    alignItems: "baseline",
+    justifyContent: "center",
+    margin: 1,
+    marginLeft: 1
+})
 
-    console.log(response.output_text);
-} catch (error) {
-    if (error instanceof APIError) {
-        console.error(`API Error: ${error.message}`);
-    } else {
-        throw error
+const promptInput = new InputRenderable(renderer, {
+    id: "prompt-input",
+    width: "100%",
+    placeholder: "Enter your prompt...",
+    marginLeft: 1
+})
+
+promptBar.add(promptInput);
+panel.add(promptBar)
+renderer.root.add(panel)
+
+promptInput.focus();
+
+renderer.keyInput.on("keypress", (key) => {
+    if (key.name === "q") {
+        renderer.destroy()
+        return
     }
-}
+})

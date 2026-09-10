@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^8.7.2",
+    "@opentui/core": "^0.5.11",
     "openai": "^7.13.0"
   }
 }
