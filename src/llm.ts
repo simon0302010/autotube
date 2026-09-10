@@ -11,8 +11,7 @@ export async function completionRequest(apiSetup: ApiSetup, prompt: string): Pro
     try {
         const response = await client.responses.create({
             model: apiSetup.model,
-            instructions: "You are a helpful assistant.",
-            input: "Please tell me why Rust is better than Java."
+            input: prompt
         });
 
         return response

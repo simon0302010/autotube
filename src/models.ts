@@ -19,7 +19,7 @@ export interface ApiSetup {
     model: string
 }
 
-export async function askProvider(): Promise<[ApiSetup, ModelList]> {
+export async function setupProvider(): Promise<[ApiSetup, ModelList]> {
     const providers: readonly string[] = ["Hack Club AI", "OpenAI", "OpenRouter"];
     const provider = await select({message: "Select your AI provider", choices: providers});
 
@@ -79,7 +79,7 @@ export async function askProvider(): Promise<[ApiSetup, ModelList]> {
         return [apiSetup, models];
     } else {
         if (response.status == 401) {
-            return askProvider();
+            return setupProvider();
         }
 
         console.error(`Failed to get models from provider: ${response.status}`);
