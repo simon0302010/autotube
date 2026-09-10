@@ -4,12 +4,22 @@
     "autotube": "./src/index.ts"
   },
   "scripts": {
-    "dev": "bun src/index.ts"
+    "dev": "bun src/index.ts",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prepare": "husky"
   },
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@eslint/js": "^10.0.1",
+    "@types/bun": "latest",
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
+    "prettier": "^3.9.6",
+    "typescript-eslint": "^8.70.0"
   },
   "peerDependencies": {
     "typescript": "^6"
@@ -18,5 +28,14 @@
     "@inquirer/prompts": "^8.7.2",
     "@opentui/core": "^0.5.11",
     "openai": "^7.13.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
   }
 }
