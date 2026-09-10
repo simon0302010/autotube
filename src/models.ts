@@ -1,4 +1,4 @@
-import { password, select } from "@inquirer/prompts";
+import { password, search, select } from "@inquirer/prompts";
 
 interface ModelInfo {
     id: string,
@@ -15,12 +15,13 @@ interface ModelList {
 
 interface ApiSetup {
     baseUrl: string,
-    apiKey: string
+    apiKey: string,
+    model: string
 }
 
 export async function askProvider(): Promise<[ApiSetup, ModelList]> {
     const providers: readonly string[] = ["Hack Club AI", "OpenAI", "OpenRouter"];
-    const provider = await select({message: "Please select your AI provider", choices: providers});
+    const provider = await select({message: "Select your AI provider", choices: providers});
 
     let baseUrl: string;
 
@@ -39,7 +40,7 @@ export async function askProvider(): Promise<[ApiSetup, ModelList]> {
             process.exit(1);
     }
 
-    const apiKey = await password({message: "Please input your API key", toggleMask: true});
+    const apiKey = await password({message: "Input your API key", toggleMask: true});
 
     const response = await fetch(`${baseUrl}/models`, {
         method: "GET",
@@ -51,8 +52,29 @@ export async function askProvider(): Promise<[ApiSetup, ModelList]> {
     });
 
     if (response.ok) {
-        const apiSetup: ApiSetup = {baseUrl, apiKey}
         const models = await response.json() as ModelList;
+
+        const model = await search({
+            message: "Select an AI model",
+            source: async (input, { signal }) => {
+                if (!input) {
+                    return [];
+                }
+
+                const matchingModels = models.data.filter(model => {
+                    return model.id.toLowerCase().includes(input.toLowerCase().trim())
+                    || model.name.toLowerCase().includes(input.toLowerCase().trim());
+                })
+
+                return matchingModels.map((model) => ({
+                    name: model.name,
+                    value: model.id,
+                    description: model.description
+                }));
+            }
+        })
+
+        const apiSetup: ApiSetup = {baseUrl, apiKey, model}
 
         return [apiSetup, models];
     } else {
