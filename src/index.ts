@@ -1,13 +1,6 @@
 #!/usr/bin/env bun
 
-import OpenAI, { APIError } from "openai";
 import { ConfigManager } from "./config";
-import {
-  BoxRenderable,
-  createCliRenderer,
-  InputRenderable,
-  TextRenderable,
-} from "@opentui/core";
 import { Tui } from "./tui";
 
 async function main() {
@@ -16,12 +9,13 @@ async function main() {
   const configManager = new ConfigManager({}, false);
 
   // In a headed environment, this will prompt the user for missing config info
-  // await configManager.validate();
+  await configManager.validate();
 
-  // this runs a really basic tui
-  const tui = await Tui.create();
+  // This just initialises the class. Everything else is done in tui.buildAndRun()
+  // Feel free to improve this if you think there is a more elegant way to achieve the same end result.
+  const tui = new Tui();
 
-  tui.runTui();
+  tui.buildAndRun();
 }
 
 main();

@@ -67,7 +67,7 @@ export class TuiButton {
     this.box.add(this.label);
   }
 
-  private onDown(event: MouseEvent) {
+  private onDown(_event: MouseEvent) {
     this.box.backgroundColor = hexColor(
       changeColorBrightnessFactor(this.backgroundColor, 0.75),
     );
@@ -80,7 +80,7 @@ export class TuiButton {
     this.pressed = true;
   }
 
-  private onUp(event: MouseEvent) {
+  private onUp(_event: MouseEvent) {
     this.box.backgroundColor = hexColor(this.backgroundColor);
     this.label.fg = hexColor(this.textColor);
 
