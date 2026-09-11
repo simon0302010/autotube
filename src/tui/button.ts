@@ -6,7 +6,8 @@ import {
 } from "@opentui/core";
 import { darkenColor, hexColor, type ColorRgb } from "../utils";
 
-const DEFAULT_COLOR: ColorRgb = { r: 200, g: 0, b: 0 };
+const DEFAULT_TEXT_COLOR: ColorRgb = { r: 200, g: 0, b: 0 };
+const DEFAULT_BACKGROUND_COLOR: ColorRgb = { r: 0, g: 0, b: 0 };
 
 interface TuiButtonOptions {
   label: string;
@@ -23,8 +24,8 @@ export class TuiButton {
   pressed: boolean;
 
   constructor(renderer: CliRenderer, options: TuiButtonOptions) {
-    this.textColor = options.textColor ?? { r: 0, g: 0, b: 0 };
-    this.backgroundColor = options.backgroundColor ?? { r: 200, g: 0, b: 0 };
+    this.textColor = options.textColor ?? DEFAULT_TEXT_COLOR;
+    this.backgroundColor = options.backgroundColor ?? DEFAULT_BACKGROUND_COLOR;
     this.pressed = false;
 
     this.box = new BoxRenderable(renderer, {
