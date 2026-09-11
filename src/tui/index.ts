@@ -49,7 +49,7 @@ export class Tui {
       margin: 1
     });
 
-    const promptSend = this.createButton("Send");
+    const promptSend = new TuiButton(this.renderer, "Send");
 
     promptBar.add(promptInput);
     promptBar.add(promptSend.box);
@@ -68,9 +68,5 @@ export class Tui {
         promptInput.value = "";
       }
     });
-  }
-
-  createButton(label: string): TuiButton {
-    return new TuiButton(this.renderer, label);
   }
 }

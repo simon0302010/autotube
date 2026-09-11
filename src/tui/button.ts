@@ -1,4 +1,4 @@
-import { BoxRenderable, CliRenderer, TextRenderable } from "@opentui/core";
+import { BoxRenderable, CliRenderer, MouseEvent, TextRenderable } from "@opentui/core";
 
 export class TuiButton {
     private label: TextRenderable;
@@ -23,11 +23,11 @@ export class TuiButton {
         this.box.add(this.label);
     }
 
-    private onMouseDown(event) {
+    private onMouseDown(event: MouseEvent) {
         this.box.backgroundColor = "#282828";
     }
 
-    private onMouseUp(event) {
+    private onMouseUp(event: MouseEvent) {
         this.box.backgroundColor = "#454545";
     }
 }
