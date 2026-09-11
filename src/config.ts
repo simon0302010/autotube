@@ -107,10 +107,20 @@ export class ConfigManager {
     }
   }
 
+  private async promptModel(): Promise<void> {
+    this._config.model = await input({ message: "Input model name" });
+  }
+
   private async setupModel(): Promise<void> {
     if (this.config.checkModels) {
       if (!this.models) {
         await this.fetchModels();
+      }
+
+      if (this.models!.data.length === 0) {
+        console.warn("No models found.");
+        await this.promptModel();
+        return;
       }
 
       const selectedModel = await search({
@@ -138,7 +148,7 @@ export class ConfigManager {
       this._config.model = selectedModel;
     } else {
       // Since `checkModels` is false (thus we have no list), we simply ask the user through text input
-      this._config.model = await input({ message: "Input model name" });
+      await this.promptModel();
     }
   }
 
