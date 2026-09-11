@@ -3,6 +3,9 @@ import { BoxRenderable, CliRenderer, MouseEvent, TextRenderable } from "@opentui
 export class TuiButton {
     private label: TextRenderable;
     box: BoxRenderable;
+    
+    pressed: boolean;
+    mouseOver: boolean;
 
     constructor(renderer: CliRenderer, label: string) {
         this.box = new BoxRenderable(renderer, {
@@ -11,8 +14,9 @@ export class TuiButton {
             backgroundColor: "#454545",
             alignItems: "center",
             justifyContent: "center",
-            onMouseDown: (event) => this.onMouseDown(event),
-            onMouseUp: (event) => this.onMouseUp(event)
+            onMouseDown: (event) => this.onDown(event),
+            onMouseUp: (event) => this.onUp(event),
+            onMouseOver: (event) => this.onUp(event)
         });
 
         this.label = new TextRenderable(renderer, {
@@ -23,11 +27,15 @@ export class TuiButton {
         this.box.add(this.label);
     }
 
-    private onMouseDown(event: MouseEvent) {
+    private onDown(event: MouseEvent) {
         this.box.backgroundColor = "#282828";
+        this.pressed = true;
     }
 
-    private onMouseUp(event: MouseEvent) {
+    private onUp(event: MouseEvent) {
         this.box.backgroundColor = "#454545";
+        this.pressed = false;
     }
+
+    private onMouseOut(event: MouseEvent)
 }
