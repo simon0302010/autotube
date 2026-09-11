@@ -2,7 +2,7 @@ import { BoxRenderable, CliRenderer, TextRenderable } from "@opentui/core";
 
 export class TuiButton {
     private label: TextRenderable;
-    private box: BoxRenderable;
+    box: BoxRenderable;
 
     constructor(renderer: CliRenderer, label: string) {
         this.box = new BoxRenderable(renderer, {
@@ -10,7 +10,9 @@ export class TuiButton {
             height: 3,
             backgroundColor: "#454545",
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
+            onMouseDown: (event) => this.onMouseDown(event),
+            onMouseUp: (event) => this.onMouseUp(event)
         });
 
         this.label = new TextRenderable(renderer, {
@@ -21,7 +23,11 @@ export class TuiButton {
         this.box.add(this.label);
     }
 
-    addTo(target: BoxRenderable) {
-        target.add(this.box);
+    private onMouseDown(event) {
+        this.box.backgroundColor = "#282828";
+    }
+
+    private onMouseUp(event) {
+        this.box.backgroundColor = "#454545";
     }
 }
