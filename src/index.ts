@@ -22,7 +22,7 @@ async function main() {
   // const [apiSetup, models] = await setupProvider();
 
   // this runs a really basic tui
-  const tui = new Tui();
+  const tui = await Tui.create();
 
   tui.runTui();
 }

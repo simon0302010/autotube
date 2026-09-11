@@ -4,19 +4,21 @@ import {
   createCliRenderer,
   InputRenderable,
 } from "@opentui/core";
+import { TuiButton } from "./button";
 
 export class Tui {
   private renderer!: CliRenderer;
 
-  constructor() {
-    this.init();
+  constructor(renderer: CliRenderer) {
+    this.renderer = renderer
   }
 
-  private async init() {
-    this.renderer = await createCliRenderer({
+  static async create() {
+    const renderer = await createCliRenderer({
       exitOnCtrlC: true,
-      backgroundColor: "#252525",
     });
+
+    return new Tui(renderer);
   }
 
   async runTui() {
@@ -34,18 +36,23 @@ export class Tui {
       height: 3,
       backgroundColor: "#1c1c1c",
       alignSelf: "flex-end",
-      alignItems: "baseline",
-      justifyContent: "center",
-      padding: 1
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "flex-start",
+      //padding: 1
     });
 
     const promptInput = new InputRenderable(this.renderer, {
       id: "prompt-input",
-      width: "100%",
+      flexGrow: 1,
       placeholder: "Enter your prompt...",
+      margin: 1
     });
 
+    const promptSend = this.createButton("Send");
+
     promptBar.add(promptInput);
+    promptSend.addTo(promptBar);
     box.add(promptBar);
     this.renderer.root.add(box);
 
@@ -61,5 +68,9 @@ export class Tui {
         promptInput.value = "";
       }
     });
+  }
+
+  createButton(label: string): TuiButton {
+    return new TuiButton(this.renderer, label);
   }
 }
