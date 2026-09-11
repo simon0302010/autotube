@@ -18,9 +18,6 @@ async function main() {
   // In a headed environment, this will prompt the user for missing config info
   // await configManager.validate();
 
-  // this asks the user for api credentials and model id (pretty much done)
-  // const [apiSetup, models] = await setupProvider();
-
   // this runs a really basic tui
   const tui = await Tui.create();
 

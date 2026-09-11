@@ -10,7 +10,7 @@ export class Tui {
   private renderer!: CliRenderer;
 
   constructor(renderer: CliRenderer) {
-    this.renderer = renderer
+    this.renderer = renderer;
   }
 
   static async create() {
@@ -28,7 +28,7 @@ export class Tui {
       backgroundColor: "#252525",
       alignItems: "center",
       justifyContent: "flex-end",
-      padding: 1
+      padding: 1,
     });
 
     const promptBar = new BoxRenderable(this.renderer, {
@@ -46,10 +46,14 @@ export class Tui {
       id: "prompt-input",
       flexGrow: 1,
       placeholder: "Enter your prompt...",
-      margin: 1
+      margin: 1,
     });
 
-    const promptSend = new TuiButton(this.renderer, "Send");
+    const promptSend = new TuiButton(this.renderer, {
+      label: "Send",
+      textColor: { r: 220, g: 220, b: 220 },
+      backgroundColor: { r: 50, g: 50, b: 50 },
+    });
 
     promptBar.add(promptInput);
     promptBar.add(promptSend.box);
