@@ -13,12 +13,14 @@ interface TuiButtonOptions {
   label: string;
   textColor?: ColorRgb;
   backgroundColor?: ColorRgb;
+  onClick?: () => void;
 }
 
 export class TuiButton {
   private label: TextRenderable;
   private textColor: ColorRgb;
   private backgroundColor: ColorRgb;
+  private onClick?: () => void;
   box: BoxRenderable;
 
   pressed: boolean;
@@ -26,6 +28,7 @@ export class TuiButton {
   constructor(renderer: CliRenderer, options: TuiButtonOptions) {
     this.textColor = options.textColor ?? DEFAULT_TEXT_COLOR;
     this.backgroundColor = options.backgroundColor ?? DEFAULT_BACKGROUND_COLOR;
+    this.onClick = options.onClick;
     this.pressed = false;
 
     this.box = new BoxRenderable(renderer, {
@@ -50,6 +53,11 @@ export class TuiButton {
 
   private onDown(event: MouseEvent) {
     this.box.backgroundColor = hexColor(darkenColor(this.backgroundColor, 10));
+
+    if (!this.pressed && this.onClick) {
+      this.onClick();
+    }
+
     this.pressed = true;
   }
 
