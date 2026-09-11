@@ -53,6 +53,8 @@ export class Tui {
       label: "Send",
       textColor: { r: 220, g: 220, b: 220 },
       backgroundColor: { r: 50, g: 50, b: 50 },
+      height: 1,
+      margin: 2,
     });
 
     promptBar.add(promptInput);

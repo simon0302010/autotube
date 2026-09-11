@@ -28,10 +28,24 @@ export function hexColor(color: [number, number, number] | ColorRgb): string {
   return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
-export function darkenColor(color: ColorRgb, amount: number): ColorRgb {
-  const r = clamp(color.r - amount, 0, 255);
-  const g = clamp(color.g - amount, 0, 255);
-  const b = clamp(color.b - amount, 0, 255);
+export function changeColorBrightness(
+  color: ColorRgb,
+  amount: number,
+): ColorRgb {
+  const r = clamp(Math.round(color.r + amount), 0, 255);
+  const g = clamp(Math.round(color.g + amount), 0, 255);
+  const b = clamp(Math.round(color.b + amount), 0, 255);
+
+  return { r, g, b };
+}
+
+export function changeColorBrightnessFactor(
+  color: ColorRgb,
+  factor: number,
+): ColorRgb {
+  const r = clamp(Math.round(color.r * factor), 0, 255);
+  const g = clamp(Math.round(color.g * factor), 0, 255);
+  const b = clamp(Math.round(color.b * factor), 0, 255);
 
   return { r, g, b };
 }
