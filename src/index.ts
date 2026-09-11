@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import OpenAI, { APIError } from "openai";
-import { setupProvider } from "./models";
+import { ConfigManager } from "./config";
 import {
   BoxRenderable,
   createCliRenderer,
@@ -10,8 +10,19 @@ import {
 } from "@opentui/core";
 import { runTui } from "./tui";
 
-// this asks the user for api credentials and model id (pretty much done)
-// const [apiSetup, models] = await setupProvider();
+async function main() {
+  // TODO: Check for a config file or individual options passed in CL arguments
+  // TODO: Check if user prefers a TUI or headless session (perhaps with a simple -y flag?)
+  const configManager = new ConfigManager({}, false);
 
-// this runs a really basic tui
-runTui();
+  // In a headed environment, this will prompt the user for missing config info
+  await configManager.validate();
+
+  // this asks the user for api credentials and model id (pretty much done)
+  // const [apiSetup, models] = await setupProvider();
+
+  // this runs a really basic tui
+  runTui();
+}
+
+main();
