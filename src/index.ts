@@ -2,11 +2,21 @@
 
 import { ConfigManager } from "./config";
 import { Tui } from "./tui";
+import { TOML } from "bun";
 
 async function main() {
-  // TODO: Check for a config file or individual options passed in CL arguments
+  // TODO: Add CL argument for configs and to specify a certain config file path
+  let config = {};
+  try {
+    const file = Bun.file("./config.toml");
+    config = TOML.parse(await file.text());
+  } catch (e) {
+    if (e instanceof Error && e.code !== 'ENOENT') {
+      throw e; // This is unexpected...
+    }
+  }
   // TODO: Check if user prefers a TUI or headless session (perhaps with a simple -y flag?)
-  const configManager = new ConfigManager({}, false);
+  const configManager = new ConfigManager(config, false);
 
   // In a headed environment, this will prompt the user for missing config info
   await configManager.validate();
