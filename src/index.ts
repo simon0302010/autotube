@@ -8,7 +8,7 @@ import {
   InputRenderable,
   TextRenderable,
 } from "@opentui/core";
-import { runTui } from "./tui";
+import { Tui } from "./tui";
 
 async function main() {
   // TODO: Check for a config file or individual options passed in CL arguments
@@ -16,13 +16,15 @@ async function main() {
   const configManager = new ConfigManager({}, false);
 
   // In a headed environment, this will prompt the user for missing config info
-  await configManager.validate();
+  // await configManager.validate();
 
   // this asks the user for api credentials and model id (pretty much done)
   // const [apiSetup, models] = await setupProvider();
 
   // this runs a really basic tui
-  runTui();
+  const tui = new Tui();
+
+  tui.runTui();
 }
 
 main();

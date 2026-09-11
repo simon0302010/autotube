@@ -1,51 +1,65 @@
 import {
   BoxRenderable,
+  CliRenderer,
   createCliRenderer,
   InputRenderable,
 } from "@opentui/core";
 
-export async function runTui() {
-  const renderer = await createCliRenderer({
-    exitOnCtrlC: true,
-    backgroundColor: "#1131E9",
-  });
+export class Tui {
+  private renderer!: CliRenderer;
 
-  const panel = new BoxRenderable(renderer, {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "#1131E9",
-    alignItems: "center",
-    justifyContent: "flex-end",
-  });
+  constructor() {
+    this.init();
+  }
 
-  const promptBar = new BoxRenderable(renderer, {
-    width: "100%",
-    height: 3,
-    backgroundColor: "#142793",
-    alignSelf: "flex-end",
-    alignItems: "baseline",
-    justifyContent: "center",
-    margin: 1,
-    marginLeft: 1,
-  });
+  private async init() {
+    this.renderer = await createCliRenderer({
+      exitOnCtrlC: true,
+      backgroundColor: "#252525",
+    });
+  }
 
-  const promptInput = new InputRenderable(renderer, {
-    id: "prompt-input",
-    width: "100%",
-    placeholder: "Enter your prompt...",
-    marginLeft: 1,
-  });
+  async runTui() {
+    const box = new BoxRenderable(this.renderer, {
+      width: "100%",
+      height: "100%",
+      backgroundColor: "#252525",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      padding: 1
+    });
 
-  promptBar.add(promptInput);
-  panel.add(promptBar);
-  renderer.root.add(panel);
+    const promptBar = new BoxRenderable(this.renderer, {
+      width: "100%",
+      height: 3,
+      backgroundColor: "#1c1c1c",
+      alignSelf: "flex-end",
+      alignItems: "baseline",
+      justifyContent: "center",
+      padding: 1
+    });
 
-  promptInput.focus();
+    const promptInput = new InputRenderable(this.renderer, {
+      id: "prompt-input",
+      width: "100%",
+      placeholder: "Enter your prompt...",
+    });
 
-  renderer.keyInput.on("keypress", (key) => {
-    if (key.name === "q") {
-      renderer.destroy();
-      return;
-    }
-  });
+    promptBar.add(promptInput);
+    box.add(promptBar);
+    this.renderer.root.add(box);
+
+    promptInput.focus();
+
+    this.renderer.keyInput.on("keypress", (key) => {
+      if (key.name === "q") {
+        this.renderer.destroy();
+        return;
+      }
+
+      if (key.name === "return" && promptInput.focused) {
+        promptInput.value = "";
+      }
+    });
+  }
 }
