@@ -1,7 +1,10 @@
 import { BaseTool, RegisterTool, type ToolMetadata } from "./tool";
 
+type SamplePayload = void;
+type SampleData = string;
+
 @RegisterTool()
-export class SampleTool extends BaseTool {
+export class SampleTool extends BaseTool<SamplePayload, SampleData> {
   static metadata: ToolMetadata = {
     definition: {
       type: "function",
@@ -14,5 +17,10 @@ export class SampleTool extends BaseTool {
 
   async execute() {
     console.log("Hello world!");
+
+    return {
+      success: true,
+      data: "Successfully executed",
+    };
   }
 }

@@ -18,7 +18,13 @@ export function RegisterTool() {
   };
 }
 
+export interface ToolResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
 // TODO: Add a method for responses and/or logging
-export abstract class BaseTool {
-  abstract execute(payload: unknown): Promise<void>;
+export abstract class BaseTool<TPayload = unknown, TData = unknown> {
+  abstract execute(payload: TPayload): Promise<ToolResult<TData>>;
 }
