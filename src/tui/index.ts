@@ -77,4 +77,9 @@ export class Tui {
 
     // TODO: Send this to an AI model and do the rest
   }
+
+  async addMessage(message: string) {
+    // Shows the message in the TUI
+    // Not implemented yet
+  }
 }

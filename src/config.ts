@@ -1,6 +1,6 @@
-import type { ApiSetup } from "./llm";
-import type { ModelList } from "./models";
-import { defaultProviders, type Providers } from "./providers";
+import type { ApiSetup } from "./agent/llm";
+import type { ModelList } from "./agent/models";
+import { defaultProviders, type Providers } from "./agent/providers";
 import { input, password, search, select } from "@inquirer/prompts";
 
 export interface AutotubeConfig {

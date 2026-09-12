@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { ConfigManager } from "./config";
-import { completionRequest } from "./llm";
+import { completionRequest } from "./agent/llm";
 import { Tui } from "./tui";
 import { TOML } from "bun";
 
