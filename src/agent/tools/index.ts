@@ -10,3 +10,5 @@
 // writeFile
 // editFile
 // runCommand
+
+export { WikipediaSearchTool } from "./wikipediaSearch";
