@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { ConfigManager } from "./config";
+import { completionRequest } from "./llm";
 import { Tui } from "./tui";
 import { TOML } from "bun";
 
@@ -21,11 +22,15 @@ async function main() {
   // In a headed environment, this will prompt the user for missing config info
   await configManager.validate();
 
+  const apiSetup = await configManager.getApiSetup();
+  if (!apiSetup) throw new Error("API setup failed");
+
+  console.log(await completionRequest(apiSetup, "What color is the sky?"));
+
   // This just initialises the class. Everything else is done in tui.buildAndRun()
   // Feel free to improve this if you think there is a more elegant way to achieve the same end result.
-  const tui = new Tui();
-
-  tui.buildAndRun();
+  // const tui = new Tui();
+  // tui.buildAndRun();
 }
 
 main();

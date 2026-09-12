@@ -1,3 +1,4 @@
+import type { ApiSetup } from "./llm";
 import type { ModelList } from "./models";
 import { defaultProviders, type Providers } from "./providers";
 import { input, password, search, select } from "@inquirer/prompts";
@@ -230,5 +231,15 @@ export class ConfigManager {
     } else {
       await this.validateHeaded();
     }
+  }
+
+  // Returns ApiSetup which can be passed to any llm functions
+  async getApiSetup(): Promise<ApiSetup | undefined> {
+    if (!this._config.provider || !this._config.apiKey) return undefined;
+
+    const baseUrl = this._config.providers![this._config.provider]?.baseUrl;
+    if (!baseUrl) return undefined;
+
+    return { baseUrl, apiKey: this._config.apiKey, model: this._config.model };
   }
 }

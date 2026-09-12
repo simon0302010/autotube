@@ -1,6 +1,11 @@
 import OpenAI, { APIError } from "openai";
-import type { ApiSetup } from "./models";
 import type { Response } from "openai/resources/responses/responses.js";
+
+export interface ApiSetup {
+  apiKey: string;
+  baseUrl: string;
+  model?: string;
+}
 
 export async function completionRequest(
   apiSetup: ApiSetup,
