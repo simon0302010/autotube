@@ -70,12 +70,32 @@ export class ConfigManager {
   }
 
   private async setupApiKey(): Promise<void> {
-    const apikey = await password({
-      message: "Input your API key",
+    let envApiKey: string | undefined;
+
+    if (this._config.provider) {
+      const provider = this._config.providers?.[this._config.provider];
+      if (provider?.apiKeyVar) {
+        const envVar = process.env[provider?.apiKeyVar];
+        if (envVar && envVar != "") {
+          envApiKey = envVar;
+        }
+      }
+    }
+
+    const message = envApiKey
+      ? "Input your API key, or press enter to use the environment variable"
+      : "Input your API key";
+
+    const userInput = await password({
+      message,
       toggleMask: true,
     });
 
-    this._config.apiKey = apikey;
+    if (!userInput || userInput.trim() == "") {
+      this._config.apiKey = envApiKey;
+    } else {
+      this._config.apiKey = userInput;
+    }
   }
 
   private async fetchModels(): Promise<void> {

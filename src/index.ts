@@ -11,7 +11,7 @@ async function main() {
     const file = Bun.file("./config.toml");
     config = TOML.parse(await file.text());
   } catch (e) {
-    if (e instanceof Error && e.code !== 'ENOENT') {
+    if (e instanceof Error && "code" in e && e.code !== "ENOENT") {
       throw e; // This is unexpected...
     }
   }
