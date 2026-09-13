@@ -4,6 +4,7 @@ import {
   createCliRenderer,
   InputRenderable,
   InputRenderableEvents,
+  ScrollBoxRenderable,
 } from "@opentui/core";
 import { TuiButton } from "./button";
 
@@ -23,19 +24,33 @@ export class Tui {
       height: "100%",
       backgroundColor: "#252525",
       alignItems: "center",
-      justifyContent: "flex-end",
+      justifyContent: "flex-start",
       padding: 1,
     });
+
+    const messageArea = new ScrollBoxRenderable(this.renderer, {
+      width: "100%",
+      height: "100%",
+    });
+
+    for (let i = 0; i < 100; i++) {
+      messageArea.add(
+        new BoxRenderable(this.renderer, {
+          id: `item-${i}`,
+          width: "100%",
+          height: 2,
+          backgroundColor: i % 2 === 0 ? "#292e42" : "#2f3449",
+        }),
+      );
+    }
 
     const promptBar = new BoxRenderable(this.renderer, {
       width: "100%",
       height: 3,
       backgroundColor: "#1c1c1c",
-      alignSelf: "flex-end",
       alignItems: "center",
       flexDirection: "row",
       justifyContent: "flex-start",
-      //padding: 1
     });
 
     this.promptInput = new InputRenderable(this.renderer, {
@@ -61,6 +76,7 @@ export class Tui {
 
     promptBar.add(this.promptInput);
     promptBar.add(promptSend.box);
+    box.add(messageArea);
     box.add(promptBar);
     this.renderer.root.add(box);
 
