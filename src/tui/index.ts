@@ -31,6 +31,7 @@ export class Tui {
     const messageArea = new ScrollBoxRenderable(this.renderer, {
       width: "100%",
       height: "100%",
+      marginBottom: 1,
     });
 
     for (let i = 0; i < 100; i++) {
@@ -87,9 +88,13 @@ export class Tui {
 
   // This retrieves the prompt and does all the magic
   private async handleSend() {
-    const _prompt = this.promptInput.value;
+    const prompt = this.promptInput.value.trim();
     this.promptInput.clearSelection();
     this.promptInput.clear();
+
+    if (prompt == ":q") {
+      this.renderer.destroy();
+    }
 
     // TODO: Send this to an AI model and do the rest
   }
