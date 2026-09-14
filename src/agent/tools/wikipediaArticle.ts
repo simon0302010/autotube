@@ -50,22 +50,21 @@ export class WikipediaArticleTool extends BaseTool<
   static metadata: ToolMetadata = {
     definition: {
       type: "function",
-      function: {
-        name: "fetchWikipediaArticle",
-        description:
-          "Fetch a Wikipedia article's complete text and all image links via page title.",
-        parameters: {
-          type: "object",
-          properties: {
-            title: {
-              type: "string",
-              description:
-                "Wikipedia page title (e.g. 'Mona_Lisa', 'Albert_Einstein')",
-            },
+      name: "fetchWikipediaArticle",
+      description:
+        "Fetch a Wikipedia article's complete text and all image links via page title.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: {
+            type: "string",
+            description:
+              "Wikipedia page title (e.g. 'Mona_Lisa', 'Albert_Einstein')",
           },
-          required: ["title"],
         },
+        required: ["title"],
       },
+      strict: true,
     },
   };
 

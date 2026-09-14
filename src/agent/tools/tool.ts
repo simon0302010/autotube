@@ -1,9 +1,9 @@
-import type { ChatCompletionTool } from "openai/resources";
 import { toolRegistry } from "./toolRegistry";
+import type { Tool } from "openai/resources/responses/responses.mjs";
 
 // This can be expanded as more metadata is needed
 export interface ToolMetadata {
-  definition: ChatCompletionTool;
+  definition: Tool;
 }
 
 export interface ToolConstructor {

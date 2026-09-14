@@ -31,25 +31,24 @@ export class WikipediaSearchTool extends BaseTool<
   static metadata: ToolMetadata = {
     definition: {
       type: "function",
-      function: {
-        name: "wikipediaSearch",
-        description:
-          "Searchs Wikipedia for articles matching given query, returns a list of titles and snippets of matching articles.",
-        parameters: {
-          type: "object",
-          properties: {
-            query: {
-              type: "string",
-              description: "The query for searching articles",
-            },
-            limit: {
-              type: "number",
-              description: "Maximum number of results to return (default: 5)",
-            },
+      name: "wikipediaSearch",
+      description:
+        "Searchs Wikipedia for articles matching given query, returns a list of titles and snippets of matching articles.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "The query for searching articles",
           },
-          required: ["query"],
+          limit: {
+            type: "number",
+            description: "Maximum number of results to return (default: 5)",
+          },
         },
+        required: ["query"],
       },
+      strict: true,
     },
   };
 
