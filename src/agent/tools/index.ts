@@ -12,3 +12,4 @@
 // runCommand
 
 export { WikipediaSearchTool } from "./wikipediaSearch";
+export { WikipediaArticleTool } from "./wikipediaArticle";
