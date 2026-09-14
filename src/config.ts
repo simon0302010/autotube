@@ -3,6 +3,8 @@ import type { ModelList } from "./agent/models";
 import { defaultProviders, type Providers } from "./agent/providers";
 import { input, password, search, select } from "@inquirer/prompts";
 
+export const DEFAULT_USE_24_HOUR_TIME: boolean = false;
+
 export interface AutotubeConfig {
   providers?: Providers; /* @defaultValue {@link ./providers#defaultProviders} */
   provider?: string; /* The provider to use
@@ -33,7 +35,7 @@ export interface AutotubeConfig {
 
   @remarks
   If not specified, users will be prompted to choose between the 2 major time formats.
-  Defaults to `true` in headless mode. */
+  Defaults to `DEFAULT_USE_24_HOUR_TIME` in headless mode. */
 }
 
 export const defaultConfig: AutotubeConfig = {
@@ -242,7 +244,7 @@ export class ConfigManager {
     }
 
     if (this.config.use24HourTime == undefined) {
-      this._config.use24HourTime = true;
+      this._config.use24HourTime = DEFAULT_USE_24_HOUR_TIME;
     }
 
     if (this.config.checkModels) {

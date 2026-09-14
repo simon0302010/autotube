@@ -8,6 +8,7 @@ import {
 } from "@opentui/core";
 import { TuiButton } from "./button";
 import { UserMessage } from "./userMessage";
+import { DEFAULT_USE_24_HOUR_TIME, type ConfigManager } from "../config";
 
 export class Tui {
   private renderer!: CliRenderer;
@@ -15,7 +16,10 @@ export class Tui {
   private messageArea!: ScrollBoxRenderable;
   private userMessages: UserMessage[];
 
-  constructor() {
+  private configManager: ConfigManager;
+
+  constructor(configManager: ConfigManager) {
+    this.configManager = configManager;
     this.userMessages = [];
   }
 
@@ -98,6 +102,8 @@ export class Tui {
   private async addUserMessage(content: string) {
     const userMessage = new UserMessage(this.renderer, {
       content,
+      use24HourTime:
+        this.configManager.config.use24HourTime ?? DEFAULT_USE_24_HOUR_TIME,
     });
 
     this.userMessages.push(userMessage);

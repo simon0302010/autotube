@@ -33,7 +33,7 @@ async function main() {
     case "tui": {
       // This just initialises the class. Everything else is done in tui.buildAndRun()
       // Feel free to improve this if you think there is a more elegant way to achieve the same end result.
-      const tui = new Tui();
+      const tui = new Tui(configManager);
       tui.buildAndRun();
       break;
     }
