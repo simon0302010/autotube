@@ -1,18 +1,23 @@
 import type { ChatCompletionTool } from "openai/resources";
+import { toolRegistry } from "./toolRegistry";
 
 // This can be expanded as more metadata is needed
 export interface ToolMetadata {
   definition: ChatCompletionTool;
 }
 
-interface ToolConstructor {
+export interface ToolConstructor {
   new (...args: unknown[]): BaseTool;
   metadata: ToolMetadata;
 }
 
-export function RegisterTool() {
-  // TODO: Also register tools in the registry
+/**
+ * @param name Should match function name in tool definition
+ */
+export function RegisterTool(name: string) {
   return function <T extends ToolConstructor>(target: T) {
+    toolRegistry.register(name, target);
+
     if (!target.metadata)
       throw new Error("Tools must have static variable 'METADATA'");
   };

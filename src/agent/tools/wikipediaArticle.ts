@@ -42,7 +42,7 @@ interface ImageInfoResponse {
   };
 }
 
-@RegisterTool()
+@RegisterTool("fetchWikipediaArticle")
 export class WikipediaArticleTool extends BaseTool<
   ArticleParams,
   ArticleResult

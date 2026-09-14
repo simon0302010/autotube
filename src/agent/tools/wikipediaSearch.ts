@@ -1,4 +1,9 @@
-import { BaseTool, RegisterTool, type ToolMetadata, type ToolResult } from "./tool";
+import {
+  BaseTool,
+  RegisterTool,
+  type ToolMetadata,
+  type ToolResult,
+} from "./tool";
 
 interface SearchParams {
   query: string;
@@ -18,8 +23,11 @@ interface SearchResponse {
   };
 }
 
-@RegisterTool()
-export class WikipediaSearchTool extends BaseTool<SearchParams, SearchResult[]> {
+@RegisterTool("wikipediaSearch")
+export class WikipediaSearchTool extends BaseTool<
+  SearchParams,
+  SearchResult[]
+> {
   static metadata: ToolMetadata = {
     definition: {
       type: "function",

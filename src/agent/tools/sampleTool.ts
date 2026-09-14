@@ -3,7 +3,7 @@ import { BaseTool, RegisterTool, type ToolMetadata } from "./tool";
 type SamplePayload = void;
 type SampleData = string;
 
-@RegisterTool()
+@RegisterTool("SampleTool")
 export class SampleTool extends BaseTool<SamplePayload, SampleData> {
   static metadata: ToolMetadata = {
     definition: {
