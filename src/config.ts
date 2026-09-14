@@ -36,6 +36,11 @@ export interface AutotubeConfig {
   @remarks
   If not specified, users will be prompted to choose between the 2 major time formats.
   Defaults to `DEFAULT_USE_24_HOUR_TIME` in headless mode. */
+
+  hackclubSearchApiKey?: string; /* The API key to use for Hack Club Search
+
+  @remarks
+  If not specified, users will be prompted to enter an API key. */
 }
 
 export const defaultConfig: AutotubeConfig = {
@@ -192,6 +197,13 @@ export class ConfigManager {
     this._config.use24HourTime = use24HourTime;
   }
 
+  private async setupHackclubSearchApiKey(): Promise<void> {
+    this._config.hackclubSearchApiKey = await password({
+      message: "Enter your Hack Club Search API key, or press enter to skip",
+      toggleMask: true,
+    });
+  }
+
   /* Assumes `checkModels` is true */
   private async validateModel(): Promise<void> {
     if (!this.config.model) {
@@ -229,6 +241,10 @@ export class ConfigManager {
 
     if (this.config.use24HourTime == undefined) {
       await this.setupTimeFormat();
+    }
+
+    if (!this.config.hackclubSearchApiKey) {
+      await this.setupHackclubSearchApiKey();
     }
   }
 
