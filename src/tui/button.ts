@@ -2,6 +2,7 @@ import {
   BoxRenderable,
   CliRenderer,
   MouseEvent,
+  Renderable,
   TextRenderable,
 } from "@opentui/core";
 import { changeColorBrightnessFactor, hexColor, type ColorRgb } from "../utils";
@@ -10,6 +11,7 @@ const DEFAULT_BACKGROUND_COLOR: ColorRgb = { r: 200, g: 0, b: 0 };
 const DEFAULT_TEXT_COLOR: ColorRgb = { r: 0, g: 0, b: 0 };
 
 interface TuiButtonOptions {
+  id?: string;
   label: string;
   textColor?: ColorRgb;
   backgroundColor?: ColorRgb;
@@ -24,15 +26,16 @@ export class TuiButton {
   private textColor: ColorRgb;
   private backgroundColor: ColorRgb;
   private onClick?: () => void;
-  box: BoxRenderable;
 
-  pressed: boolean;
+  // Only the class should be able to edit these
+  private _renderable: BoxRenderable;
+  private _pressed: boolean;
 
   constructor(renderer: CliRenderer, options: TuiButtonOptions) {
     this.textColor = options.textColor ?? DEFAULT_TEXT_COLOR;
     this.backgroundColor = options.backgroundColor ?? DEFAULT_BACKGROUND_COLOR;
     this.onClick = options.onClick;
-    this.pressed = false;
+    this._pressed = false;
 
     // Enforcing the minimum width
     let width = options.width ?? options.label.length + 2;
@@ -46,7 +49,7 @@ export class TuiButton {
       height = Math.max(height, 1);
     }
 
-    this.box = new BoxRenderable(renderer, {
+    this._renderable = new BoxRenderable(renderer, {
       width,
       height,
       backgroundColor: hexColor(this.backgroundColor),
@@ -56,6 +59,7 @@ export class TuiButton {
       onMouseUp: (event: MouseEvent) => this.onUp(event),
       onMouseOut: (event: MouseEvent) => this.onUp(event),
       margin: options.margin,
+      id: options.id,
     });
 
     this.label = new TextRenderable(renderer, {
@@ -64,11 +68,19 @@ export class TuiButton {
       selectable: false,
     });
 
-    this.box.add(this.label);
+    this._renderable.add(this.label);
+  }
+
+  get renderable(): Renderable {
+    return this._renderable;
+  }
+
+  get pressed(): boolean {
+    return this._pressed;
   }
 
   private onDown(_event: MouseEvent) {
-    this.box.backgroundColor = hexColor(
+    this._renderable.backgroundColor = hexColor(
       changeColorBrightnessFactor(this.backgroundColor, 0.75),
     );
     this.label.fg = hexColor(changeColorBrightnessFactor(this.textColor, 0.75));
@@ -77,13 +89,13 @@ export class TuiButton {
       this.onClick();
     }
 
-    this.pressed = true;
+    this._pressed = true;
   }
 
   private onUp(_event: MouseEvent) {
-    this.box.backgroundColor = hexColor(this.backgroundColor);
+    this._renderable.backgroundColor = hexColor(this.backgroundColor);
     this.label.fg = hexColor(this.textColor);
 
-    this.pressed = false;
+    this._pressed = false;
   }
 }

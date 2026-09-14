@@ -7,6 +7,7 @@ import {
   ScrollBoxRenderable,
 } from "@opentui/core";
 import { TuiButton } from "./button";
+import { UserMessage } from "./userMessage";
 
 export class Tui {
   private renderer!: CliRenderer;
@@ -36,12 +37,9 @@ export class Tui {
 
     for (let i = 0; i < 100; i++) {
       messageArea.add(
-        new BoxRenderable(this.renderer, {
-          id: `item-${i}`,
-          width: "100%",
-          height: 2,
-          backgroundColor: i % 2 === 0 ? "#292e42" : "#2f3449",
-        }),
+        new UserMessage(this.renderer, {
+          content: "Test User Message",
+        }).renderable,
       );
     }
 
@@ -76,7 +74,7 @@ export class Tui {
     });
 
     promptBar.add(this.promptInput);
-    promptBar.add(promptSend.box);
+    promptBar.add(promptSend.renderable);
     box.add(messageArea);
     box.add(promptBar);
     this.renderer.root.add(box);
@@ -99,7 +97,7 @@ export class Tui {
     // TODO: Send this to an AI model and do the rest
   }
 
-  async addMessage(message: string) {
+  async addMessage(_message: string) {
     // Shows the message in the TUI
     // Not implemented yet
   }
