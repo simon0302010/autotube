@@ -27,8 +27,13 @@ export interface AutotubeConfig {
 
   @defaultValue true
   @remarks
-  If `model` is not found in the list, an error will be thrown.
-  */
+  If `model` is not found in the list, an error will be thrown. */
+
+  use24HourTime?: boolean; /* Whether to use the 24-hour time format in the TUI
+
+  @remarks
+  If not specified, users will be prompted to choose between the 2 major time formats.
+  Defaults to `true` in headless mode. */
 }
 
 export const defaultConfig: AutotubeConfig = {
@@ -173,6 +178,18 @@ export class ConfigManager {
     }
   }
 
+  private async setupTimeFormat(): Promise<void> {
+    const use24HourTime: boolean = await select({
+      message: "Select your preferred time format",
+      choices: [
+        { name: "12-hour format", value: false },
+        { name: "24-hour format", value: true },
+      ],
+    });
+
+    this._config.use24HourTime = use24HourTime;
+  }
+
   /* Assumes `checkModels` is true */
   private async validateModel(): Promise<void> {
     if (!this.config.model) {
@@ -207,6 +224,10 @@ export class ConfigManager {
     if (this.config.checkModels) {
       await this.validateModel();
     }
+
+    if (this.config.use24HourTime == undefined) {
+      await this.setupTimeFormat();
+    }
   }
 
   async validateHeadless(): Promise<void> {
@@ -218,6 +239,10 @@ export class ConfigManager {
     }
     if (!this.config.model) {
       throw new Error("No model specified");
+    }
+
+    if (this.config.use24HourTime == undefined) {
+      this._config.use24HourTime = true;
     }
 
     if (this.config.checkModels) {
