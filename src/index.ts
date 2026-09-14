@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { ConfigManager } from "./config";
-import { completionRequest } from "./agent/llm";
+import { LLMSession } from "./agent/llm";
 import { Tui } from "./tui";
 import { TOML } from "bun";
 import { select } from "@inquirer/prompts";
@@ -44,7 +44,14 @@ async function main() {
       const apiSetup = await configManager.getApiSetup();
       if (!apiSetup) throw new Error("API setup failed");
 
-      console.log(await completionRequest(apiSetup, "What color is the sky?"));
+      const session = new LLMSession(apiSetup);
+
+      session.addMessage({
+        role: "user",
+        content: "What color is the sky?",
+      });
+
+      console.log(await session.call());
       break;
     }
     default: {
@@ -53,4 +60,4 @@ async function main() {
   }
 }
 
-main();
+await main();

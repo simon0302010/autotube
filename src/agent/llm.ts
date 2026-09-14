@@ -1,5 +1,9 @@
-import OpenAI, { APIError } from "openai";
-import type { Response } from "openai/resources/responses/responses.js";
+import OpenAI from "openai";
+import type {
+  ResponseInput,
+  ResponseInputItem,
+} from "openai/resources/responses/responses.mjs";
+import { toolRegistry } from "./tools/toolRegistry";
 
 export interface ApiSetup {
   apiKey: string;
@@ -7,28 +11,39 @@ export interface ApiSetup {
   model?: string;
 }
 
-export async function completionRequest(
-  apiSetup: ApiSetup,
-  prompt: string,
-): Promise<Response | undefined> {
-  const client = new OpenAI({
-    apiKey: apiSetup.apiKey,
-    baseURL: apiSetup.baseUrl,
-  });
+export class LLMSession {
+  apiSetup: ApiSetup;
+  history: ResponseInput;
+  client: OpenAI;
 
-  try {
-    const response = await client.responses.create({
-      model: apiSetup.model,
-      input: prompt,
+  constructor(apiSetup: ApiSetup) {
+    this.apiSetup = apiSetup;
+    this.history = [];
+    this.client = new OpenAI({
+      apiKey: apiSetup.apiKey,
+      baseURL: apiSetup.baseUrl,
+    });
+  }
+
+  addMessage(message: ResponseInputItem) {
+    this.history.push(message);
+  }
+
+  async call() {
+    const response = await this.client.responses.create({
+      model: this.apiSetup.model,
+      input: this.history,
+      tools: toolRegistry.getTools().map((tool) => tool.metadata.definition),
     });
 
-    return response;
-  } catch (error) {
-    if (error instanceof APIError) {
-      console.error(`API Error: ${error.message}`);
-      return undefined;
-    } else {
-      throw error;
+    for (const step of response.output) {
+      if (step.type == "message") {
+        this.history.push(step);
+      } else if (step.type == "function_call") {
+        // TODO: Handle tool calling
+      }
     }
+
+    return response;
   }
 }
