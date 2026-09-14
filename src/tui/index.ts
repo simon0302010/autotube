@@ -9,18 +9,19 @@ import {
 import { TuiButton } from "./button";
 import { UserMessage } from "./userMessage";
 import { DEFAULT_USE_24_HOUR_TIME, type ConfigManager } from "../config";
+import { AgentMessage } from "./agentMessage";
 
 export class Tui {
   private renderer!: CliRenderer;
   private promptInput!: InputRenderable; // Needs to be acessible from anywhere in the class.
   private messageArea!: ScrollBoxRenderable;
-  private userMessages: UserMessage[];
+  private messages: (UserMessage | AgentMessage)[];
 
   private configManager: ConfigManager;
 
   constructor(configManager: ConfigManager) {
     this.configManager = configManager;
-    this.userMessages = [];
+    this.messages = [];
   }
 
   async buildAndRun() {
@@ -99,6 +100,7 @@ export class Tui {
     // TODO: Send this to an AI model and do the rest
   }
 
+  // Adds a user message to the TUI
   private async addUserMessage(content: string) {
     const userMessage = new UserMessage(this.renderer, {
       content,
@@ -106,12 +108,20 @@ export class Tui {
         this.configManager.config.use24HourTime ?? DEFAULT_USE_24_HOUR_TIME,
     });
 
-    this.userMessages.push(userMessage);
+    this.messages.push(userMessage);
     this.messageArea.add(userMessage.renderable);
+
+    this.addAgentMessage("Test Response 1");
+    this.addAgentMessage("Test Response 2");
   }
 
-  async addAgentMessage(_message: string) {
-    // Shows the message in the TUI
-    // Not implemented yet
+  // Adds an agent message to the TUI
+  async addAgentMessage(content: string) {
+    const agentMessage = new AgentMessage(this.renderer, {
+      content,
+    });
+
+    this.messages.push(agentMessage);
+    this.messageArea.add(agentMessage.renderable);
   }
 }

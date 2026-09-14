@@ -3,7 +3,7 @@ import type { ModelList } from "./agent/models";
 import { defaultProviders, type Providers } from "./agent/providers";
 import { input, password, search, select } from "@inquirer/prompts";
 
-export const DEFAULT_USE_24_HOUR_TIME: boolean = false;
+export const DEFAULT_USE_24_HOUR_TIME: boolean = true;
 
 export interface AutotubeConfig {
   providers?: Providers; /* @defaultValue {@link ./providers#defaultProviders} */
