@@ -12,8 +12,12 @@ import { UserMessage } from "./userMessage";
 export class Tui {
   private renderer!: CliRenderer;
   private promptInput!: InputRenderable; // Needs to be acessible from anywhere in the class.
+  private messageArea!: ScrollBoxRenderable;
+  private userMessages: UserMessage[];
 
-  constructor() {}
+  constructor() {
+    this.userMessages = [];
+  }
 
   async buildAndRun() {
     this.renderer = await createCliRenderer({
@@ -29,19 +33,11 @@ export class Tui {
       padding: 1,
     });
 
-    const messageArea = new ScrollBoxRenderable(this.renderer, {
+    this.messageArea = new ScrollBoxRenderable(this.renderer, {
       width: "100%",
       height: "100%",
       marginBottom: 1,
     });
-
-    for (let i = 0; i < 100; i++) {
-      messageArea.add(
-        new UserMessage(this.renderer, {
-          content: "Test User Message",
-        }).renderable,
-      );
-    }
 
     const promptBar = new BoxRenderable(this.renderer, {
       width: "100%",
@@ -75,7 +71,7 @@ export class Tui {
 
     promptBar.add(this.promptInput);
     promptBar.add(promptSend.renderable);
-    box.add(messageArea);
+    box.add(this.messageArea);
     box.add(promptBar);
     this.renderer.root.add(box);
 
@@ -94,10 +90,21 @@ export class Tui {
       this.renderer.destroy();
     }
 
+    this.addUserMessage(prompt);
+
     // TODO: Send this to an AI model and do the rest
   }
 
-  async addMessage(_message: string) {
+  private async addUserMessage(content: string) {
+    const userMessage = new UserMessage(this.renderer, {
+      content,
+    });
+
+    this.userMessages.push(userMessage);
+    this.messageArea.add(userMessage.renderable);
+  }
+
+  async addAgentMessage(_message: string) {
     // Shows the message in the TUI
     // Not implemented yet
   }

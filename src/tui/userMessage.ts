@@ -30,7 +30,7 @@ export class UserMessage {
       width: "100%",
       height: "auto",
       padding: 1,
-      margin: 1,
+      marginBottom: 1,
       backgroundColor: hexColor(
         options.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
       ),
