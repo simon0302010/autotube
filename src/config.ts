@@ -269,4 +269,13 @@ export class ConfigManager {
 
     return { baseUrl, apiKey: this._config.apiKey, model: this._config.model };
   }
+
+  // Returns the configured apiKey if `provider` matches
+  async getProviderApiKey(provider: string): Promise<string | undefined> {
+    if (this._config.provider == provider) {
+      return this._config.apiKey;
+    } else {
+      return undefined;
+    }
+  }
 }
