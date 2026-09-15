@@ -113,7 +113,11 @@ export class WikipediaArticleTool extends BaseTool<
         });
         const infoUrl = `https://en.wikipedia.org/w/api.php?${infoParams}`;
 
-        const infoResponse = await fetch(infoUrl);
+        const infoResponse = await fetch(infoUrl, {
+          headers: {
+            "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
+          },
+        });
 
         if (!infoResponse.ok) {
           return {
