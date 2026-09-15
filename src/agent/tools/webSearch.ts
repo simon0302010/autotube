@@ -8,7 +8,7 @@ import {
 interface WebSearchParams {
   // API key is marked optional otherwise TypeScript gets all angry since configManager.config.hackclubSearchApiKey is either undefined or a string.
   // However there is an if statement down below which throws an error if apiKey does not exist, so don't worry :p
-  apiKey?: string;
+  apiKey?: string | undefined;
   query: string;
   numResults: number;
 }
