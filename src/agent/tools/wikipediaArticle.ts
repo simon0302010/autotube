@@ -7,7 +7,7 @@ import {
 
 interface ArticleParams {
   title: string;
-  summary?: boolean;
+  summary?: boolean | null;
 }
 
 interface ArticleImage {
@@ -77,19 +77,21 @@ export class WikipediaArticleTool extends BaseTool<
               "Wikipedia page title (e.g. 'Mona_Lisa', 'Albert_Einstein')",
           },
           summary: {
-            type: "boolean",
+            type: ["boolean", "null"],
             description:
               "Return full article text (False) or return summary (True) (default False)",
           },
         },
-        required: ["title"],
+        required: ["title", "summary"],
+        additionalProperties: false,
       },
       strict: true,
     },
   };
 
   async execute(payload: ArticleParams): Promise<ToolResult<ArticleResult>> {
-    const { title, summary = false } = payload;
+    const { title } = payload;
+    const summary = payload.summary ?? false;
 
     let extract: string;
 

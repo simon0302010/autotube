@@ -7,7 +7,7 @@ import {
 
 interface SearchParams {
   query: string;
-  limit?: number;
+  limit?: number | null;
 }
 
 interface SearchResult {
@@ -42,18 +42,20 @@ export class WikipediaSearchTool extends BaseTool<
             description: "The query for searching articles",
           },
           limit: {
-            type: "number",
+            type: ["number", "null"],
             description: "Maximum number of results to return (default: 5)",
           },
         },
-        required: ["query"],
+        required: ["query", "limit"],
+        additionalProperties: false,
       },
       strict: true,
     },
   };
 
   async execute(payload: SearchParams): Promise<ToolResult<SearchResult[]>> {
-    const { query, limit = 5 } = payload;
+    const { query } = payload;
+    const limit = payload.limit ?? 5;
 
     const params = new URLSearchParams({
       action: "query",

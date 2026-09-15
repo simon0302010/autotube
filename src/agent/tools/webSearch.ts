@@ -8,9 +8,9 @@ import {
 interface WebSearchParams {
   // API key is marked optional otherwise TypeScript gets all angry since configManager.config.hackclubSearchApiKey is either undefined or a string.
   // However there is an if statement down below which throws an error if apiKey does not exist, so don't worry :p
-  apiKey?: string | undefined;
+  apiKey?: string | null;
   query: string;
-  numResults: number;
+  numResults?: number | null;
 }
 
 interface WebSearchResult {
@@ -52,18 +52,20 @@ export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
             description: "Search query (max 400 characters)",
           },
           numResults: {
-            type: "number",
+            type: ["number", "null"],
             description: "Number of Results (default 5)",
           },
         },
-        required: ["query", "apiKey"],
+        required: ["apiKey", "query", "numResults"],
+        additionalProperties: false,
       },
       strict: true,
     },
   };
 
   async execute(payload: WebSearchParams): Promise<ToolResult<WebSearchData>> {
-    const { apiKey, query, numResults = 5 } = payload;
+    const { apiKey, query } = payload;
+    const numResults = payload.numResults ?? 5;
 
     if (!apiKey) {
       return {
