@@ -4,7 +4,6 @@ import { ConfigManager } from "./config";
 import { LLMSession } from "./agent/llm";
 import { Tui } from "./tui";
 import { TOML } from "bun";
-import { select } from "@inquirer/prompts";
 
 async function main() {
   // TODO: Add CL argument for configs and to specify a certain config file path
@@ -20,44 +19,26 @@ async function main() {
   // TODO: Check if user prefers a TUI or headless session (perhaps with a simple -y flag?)
   const configManager = new ConfigManager(config, false);
 
-  // Just for testing different parts of the codebase. Remove when obsolete
-  switch (
-    await select({
-      message: "What do you want to do?",
-      choices: [
-        { name: "Run the TUI", value: "tui" },
-        { name: "Test the API", value: "api" },
-      ],
-    })
-  ) {
-    case "tui": {
-      // This just initialises the class. Everything else is done in tui.buildAndRun()
-      // Feel free to improve this if you think there is a more elegant way to achieve the same end result.
-      const tui = new Tui(configManager);
-      tui.buildAndRun();
-      break;
-    }
-    case "api": {
-      // In a headed environment, this will prompt the user for missing config info
-      await configManager.validate();
+  // In a headed environment, this will prompt the user for missing config info
+  await configManager.validate();
 
-      const apiSetup = await configManager.getApiSetup();
-      if (!apiSetup) throw new Error("API setup failed");
+  const apiSetup = await configManager.getApiSetup();
+  if (!apiSetup) throw new Error("API setup failed");
 
-      const session = new LLMSession(apiSetup);
+  const session = new LLMSession(apiSetup);
 
+  const tui = new Tui(configManager, {
+    onPromptSend: async (prompt: string) => {
       session.addMessage({
         role: "user",
-        content: "What color is the sky?",
+        content: prompt,
       });
 
-      console.log(await session.call());
-      break;
-    }
-    default: {
-      break;
-    }
-  }
+      tui.addAgentMessage(String((await session.call()).output_text));
+    },
+  });
+
+  tui.buildAndRun();
 }
 
 await main();

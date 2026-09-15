@@ -11,6 +11,10 @@ import { UserMessage } from "./userMessage";
 import { DEFAULT_USE_24_HOUR_TIME, type ConfigManager } from "../config";
 import { AgentMessage } from "./agentMessage";
 
+interface TuiOptions {
+  onPromptSend?: (prompt: string) => void;
+}
+
 export class Tui {
   private renderer!: CliRenderer;
   private promptInput!: InputRenderable; // Needs to be acessible from anywhere in the class.
@@ -18,8 +22,10 @@ export class Tui {
   private messages: (UserMessage | AgentMessage)[];
 
   private configManager: ConfigManager;
+  private onPromptSend?: (prompt: string) => void;
 
-  constructor(configManager: ConfigManager) {
+  constructor(configManager: ConfigManager, options: TuiOptions) {
+    this.onPromptSend = options.onPromptSend;
     this.configManager = configManager;
     this.messages = [];
   }
@@ -97,7 +103,9 @@ export class Tui {
 
     this.addUserMessage(prompt);
 
-    // TODO: Send this to an AI model and do the rest
+    if (this.onPromptSend) {
+      this.onPromptSend(prompt);
+    }
   }
 
   // Adds a user message to the TUI
@@ -110,9 +118,6 @@ export class Tui {
 
     this.messages.push(userMessage);
     this.messageArea.add(userMessage.renderable);
-
-    this.addAgentMessage("Test Response 1");
-    this.addAgentMessage("Test Response 2");
   }
 
   // Adds an agent message to the TUI
