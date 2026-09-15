@@ -1,4 +1,3 @@
-import { config } from "typescript-eslint";
 import { ConfigManager } from "../../../config";
 import { WebSearchTool } from "../webSearch";
 
