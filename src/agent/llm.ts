@@ -1,9 +1,10 @@
-import OpenAI from "openai";
+import OpenAI, { APIError } from "openai";
 import type {
   ResponseInput,
   ResponseInputItem,
 } from "openai/resources/responses/responses.mjs";
 import { toolRegistry } from "./tools/toolRegistry";
+import "./tools";
 
 export interface ApiSetup {
   apiKey: string;
@@ -30,11 +31,26 @@ export class LLMSession {
   }
 
   async call() {
-    const response = await this.client.responses.create({
-      model: this.apiSetup.model,
-      input: this.history,
-      tools: toolRegistry.getTools().map((tool) => tool.metadata.definition),
-    });
+    let response;
+    try {
+      response = await this.client.responses.create({
+        model: this.apiSetup.model,
+        input: this.history,
+        tools: toolRegistry.getTools().map((tool) => tool.metadata.definition),
+      });
+    } catch (e) {
+      if (e instanceof APIError) {
+        console.error(`API Error (${e.status}): ${e.message}`);
+        if (e.error) {
+          console.error(e.error);
+        }
+      } else if (e instanceof Error) {
+        console.error(`Error: ${e.message}`);
+      } else {
+        console.error("An unexpected error occurred:", e);
+      }
+      throw e;
+    }
 
     for (const step of response.output) {
       if (step.type == "message") {
