@@ -7,6 +7,7 @@ import {
 
 interface ArticleParams {
   title: string;
+  summary?: boolean;
 }
 
 interface ArticleImage {
@@ -42,6 +43,20 @@ interface ImageInfoResponse {
   };
 }
 
+interface ExtractResponse {
+  query: {
+    pages: Record<
+      string,
+      {
+        pageid?: number;
+        ns?: number;
+        title?: string;
+        extract?: string;
+      }
+    >;
+  };
+}
+
 @RegisterTool("fetchWikipediaArticle")
 export class WikipediaArticleTool extends BaseTool<
   ArticleParams,
@@ -61,6 +76,11 @@ export class WikipediaArticleTool extends BaseTool<
             description:
               "Wikipedia page title (e.g. 'Mona_Lisa', 'Albert_Einstein')",
           },
+          summary: {
+            type: "boolean",
+            description:
+              "Return full article text (False) or return summary (True) (default False)",
+          },
         },
         required: ["title"],
       },
@@ -69,19 +89,55 @@ export class WikipediaArticleTool extends BaseTool<
   };
 
   async execute(payload: ArticleParams): Promise<ToolResult<ArticleResult>> {
-    const { title } = payload;
+    const { title, summary = false } = payload;
 
-    const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-    const summaryResponse = await fetch(summaryUrl);
+    let extract: string;
 
-    if (!summaryResponse.ok) {
-      return {
-        success: false,
-        error: `Wikipedia API error: ${summaryResponse.status} ${summaryResponse.statusText}`,
-      };
+    if (summary) {
+      const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+      const summaryResponse = await fetch(summaryUrl, {
+        headers: {
+          "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
+        },
+      });
+
+      if (!summaryResponse.ok) {
+        return {
+          success: false,
+          error: `Wikipedia API error: ${summaryResponse.status} ${summaryResponse.statusText}`,
+        };
+      }
+
+      const summaryData = (await summaryResponse.json()) as SummaryResponse;
+      extract = summaryData.extract;
+    } else {
+      const extractParams = new URLSearchParams({
+        action: "query",
+        titles: title,
+        prop: "extracts",
+        explaintext: "true",
+        format: "json",
+        origin: "*",
+      });
+      const extractUrl = `https://en.wikipedia.org/w/api.php?${extractParams}`;
+      const extractResponse = await fetch(extractUrl, {
+        headers: {
+          "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
+        },
+      });
+
+      if (!extractResponse.ok) {
+        return {
+          success: false,
+          error: `Wikipedia extract article API error: ${extractResponse.status} ${extractResponse.statusText}`,
+        };
+      }
+
+      const extractData = (await extractResponse.json()) as ExtractResponse;
+
+      const pages = Object.values(extractData.query.pages);
+      extract = pages[0]?.extract ?? "";
     }
-
-    const summaryData = (await summaryResponse.json()) as SummaryResponse;
 
     const imageParams = new URLSearchParams({
       action: "query",
@@ -145,8 +201,8 @@ export class WikipediaArticleTool extends BaseTool<
     return {
       success: true,
       data: {
-        title: summaryData.title,
-        extract: summaryData.extract,
+        title,
+        extract,
         images,
       },
     };
