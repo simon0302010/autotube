@@ -79,9 +79,10 @@ export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
+      // TODO: Add all arguments available from API
       body: JSON.stringify({
         query: query,
-        numResults: numResults, // TODO: Add argument to control the number of results
+        numResults: numResults,
       }),
     });
 
