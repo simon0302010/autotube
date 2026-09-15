@@ -1,5 +1,7 @@
-import { WikipediaArticleTool } from "../wikipediaArticle";
+import { wikipediaArticleTool } from "../wikipediaArticle";
 
-const tool = new WikipediaArticleTool();
-const result = await tool.execute({ title: "Explosion", summary: true });
+const result = await wikipediaArticleTool.execute({
+  title: "Explosion",
+  summary: true,
+});
 console.log(result);

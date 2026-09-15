@@ -1,9 +1,5 @@
-import {
-  BaseTool,
-  RegisterTool,
-  type ToolMetadata,
-  type ToolResult,
-} from "./tool";
+import { toolRegistry } from "./toolRegistry";
+import type { ToolMetadata, ToolResult } from "./tool";
 
 interface ArticleParams {
   title: string;
@@ -57,12 +53,8 @@ interface ExtractResponse {
   };
 }
 
-@RegisterTool("fetchWikipediaArticle")
-export class WikipediaArticleTool extends BaseTool<
-  ArticleParams,
-  ArticleResult
-> {
-  static metadata: ToolMetadata = {
+export const wikipediaArticleTool: ToolMetadata<ArticleParams, ArticleResult> =
+  {
     definition: {
       type: "function",
       name: "fetchWikipediaArticle",
@@ -87,126 +79,129 @@ export class WikipediaArticleTool extends BaseTool<
       },
       strict: true,
     },
-  };
 
-  async execute(payload: ArticleParams): Promise<ToolResult<ArticleResult>> {
-    const { title } = payload;
-    const summary = payload.summary ?? false;
+    execute: async (
+      payload: ArticleParams,
+    ): Promise<ToolResult<ArticleResult>> => {
+      const { title } = payload;
+      const summary = payload.summary ?? false;
 
-    let extract: string;
+      let extract: string;
 
-    if (summary) {
-      const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-      const summaryResponse = await fetch(summaryUrl, {
-        headers: {
-          "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
-        },
-      });
-
-      if (!summaryResponse.ok) {
-        return {
-          success: false,
-          error: `Wikipedia API error: ${summaryResponse.status} ${summaryResponse.statusText}`,
-        };
-      }
-
-      const summaryData = (await summaryResponse.json()) as SummaryResponse;
-      extract = summaryData.extract;
-    } else {
-      const extractParams = new URLSearchParams({
-        action: "query",
-        titles: title,
-        prop: "extracts",
-        explaintext: "true",
-        format: "json",
-        origin: "*",
-      });
-      const extractUrl = `https://en.wikipedia.org/w/api.php?${extractParams}`;
-      const extractResponse = await fetch(extractUrl, {
-        headers: {
-          "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
-        },
-      });
-
-      if (!extractResponse.ok) {
-        return {
-          success: false,
-          error: `Wikipedia extract article API error: ${extractResponse.status} ${extractResponse.statusText}`,
-        };
-      }
-
-      const extractData = (await extractResponse.json()) as ExtractResponse;
-
-      const pages = Object.values(extractData.query.pages);
-      extract = pages[0]?.extract ?? "";
-    }
-
-    const imageParams = new URLSearchParams({
-      action: "query",
-      titles: title,
-      prop: "images",
-      format: "json",
-      origin: "*",
-    });
-    const imageUrl = `https://en.wikipedia.org/w/api.php?${imageParams}`;
-
-    const imageResponse = await fetch(imageUrl);
-    const imageData = (await imageResponse.json()) as ImagesResponse;
-
-    const images: ArticleImage[] = [];
-
-    if (imageData.query) {
-      const pages = Object.values(imageData.query.pages);
-      // What the fuck, TypeScript?
-      const pageImages = pages[0]?.images?.slice(0, 20) ?? [];
-
-      for (const image of pageImages) {
-        const infoParams = new URLSearchParams({
-          action: "query",
-          titles: image.title,
-          prop: "imageinfo",
-          iiprop: "url|size",
-          format: "json",
-          origin: "*",
-        });
-        const infoUrl = `https://en.wikipedia.org/w/api.php?${infoParams}`;
-
-        const infoResponse = await fetch(infoUrl, {
+      if (summary) {
+        const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+        const summaryResponse = await fetch(summaryUrl, {
           headers: {
             "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
           },
         });
 
-        if (!infoResponse.ok) {
+        if (!summaryResponse.ok) {
           return {
             success: false,
-            error: `Wikipedia Info API error: ${infoResponse.status} ${infoResponse.statusText}`,
+            error: `Wikipedia API error: ${summaryResponse.status} ${summaryResponse.statusText}`,
           };
         }
 
-        const infoData = (await infoResponse.json()) as ImageInfoResponse;
+        const summaryData = (await summaryResponse.json()) as SummaryResponse;
+        extract = summaryData.extract;
+      } else {
+        const extractParams = new URLSearchParams({
+          action: "query",
+          titles: title,
+          prop: "extracts",
+          explaintext: "true",
+          format: "json",
+          origin: "*",
+        });
+        const extractUrl = `https://en.wikipedia.org/w/api.php?${extractParams}`;
+        const extractResponse = await fetch(extractUrl, {
+          headers: {
+            "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
+          },
+        });
 
-        const infoPages = Object.values(infoData.query.pages);
-        const info = infoPages[0]?.imageinfo?.[0];
+        if (!extractResponse.ok) {
+          return {
+            success: false,
+            error: `Wikipedia extract article API error: ${extractResponse.status} ${extractResponse.statusText}`,
+          };
+        }
 
-        if (info) {
-          images.push({
-            title: image.title,
-            url: info.url,
-            width: info.width,
-            height: info.height,
+        const extractData = (await extractResponse.json()) as ExtractResponse;
+
+        const pages = Object.values(extractData.query.pages);
+        extract = pages[0]?.extract ?? "";
+      }
+
+      const imageParams = new URLSearchParams({
+        action: "query",
+        titles: title,
+        prop: "images",
+        format: "json",
+        origin: "*",
+      });
+      const imageUrl = `https://en.wikipedia.org/w/api.php?${imageParams}`;
+
+      const imageResponse = await fetch(imageUrl);
+      const imageData = (await imageResponse.json()) as ImagesResponse;
+
+      const images: ArticleImage[] = [];
+
+      if (imageData.query) {
+        const pages = Object.values(imageData.query.pages);
+        // What the fuck, TypeScript?
+        const pageImages = pages[0]?.images?.slice(0, 20) ?? [];
+
+        for (const image of pageImages) {
+          const infoParams = new URLSearchParams({
+            action: "query",
+            titles: image.title,
+            prop: "imageinfo",
+            iiprop: "url|size",
+            format: "json",
+            origin: "*",
           });
+          const infoUrl = `https://en.wikipedia.org/w/api.php?${infoParams}`;
+
+          const infoResponse = await fetch(infoUrl, {
+            headers: {
+              "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
+            },
+          });
+
+          if (!infoResponse.ok) {
+            return {
+              success: false,
+              error: `Wikipedia Info API error: ${infoResponse.status} ${infoResponse.statusText}`,
+            };
+          }
+
+          const infoData = (await infoResponse.json()) as ImageInfoResponse;
+
+          const infoPages = Object.values(infoData.query.pages);
+          const info = infoPages[0]?.imageinfo?.[0];
+
+          if (info) {
+            images.push({
+              title: image.title,
+              url: info.url,
+              width: info.width,
+              height: info.height,
+            });
+          }
         }
       }
-    }
 
-    return {
-      success: true,
-      data: {
-        title,
-        extract,
-        images,
-      },
-    };
-  }
-}
+      return {
+        success: true,
+        data: {
+          title,
+          extract,
+          images,
+        },
+      };
+    },
+  };
+
+toolRegistry.register("fetchWikipediaArticle", wikipediaArticleTool);

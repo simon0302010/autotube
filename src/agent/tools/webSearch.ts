@@ -1,9 +1,5 @@
-import {
-  BaseTool,
-  RegisterTool,
-  type ToolMetadata,
-  type ToolResult,
-} from "./tool";
+import { toolRegistry } from "./toolRegistry";
+import type { ToolMetadata, ToolResult } from "./tool";
 
 interface WebSearchParams {
   // API key is marked optional otherwise TypeScript gets all angry since configManager.config.hackclubSearchApiKey is either undefined or a string.
@@ -33,37 +29,35 @@ interface SearchResponse {
   searchTime: number;
 }
 
-@RegisterTool("webSearch")
-export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
-  static metadata: ToolMetadata = {
-    definition: {
-      type: "function",
-      name: "webSearch",
-      description: "Search the web for pages, videos, etc.",
-      parameters: {
-        type: "object",
-        properties: {
-          apiKey: {
-            type: "string",
-            description: "Hack Club AI API Key (for Exa search proxy)",
-          },
-          query: {
-            type: "string",
-            description: "Search query (max 400 characters)",
-          },
-          numResults: {
-            type: ["number", "null"],
-            description: "Number of Results (default 5)",
-          },
+export const webSearchTool: ToolMetadata<WebSearchParams, WebSearchData> = {
+  definition: {
+    type: "function",
+    name: "webSearch",
+    description: "Search the web for pages, videos, etc.",
+    parameters: {
+      type: "object",
+      properties: {
+        apiKey: {
+          type: "string",
+          description: "Hack Club AI API Key (for Exa search proxy)",
         },
-        required: ["apiKey", "query", "numResults"],
-        additionalProperties: false,
+        query: {
+          type: "string",
+          description: "Search query (max 400 characters)",
+        },
+        numResults: {
+          type: ["number", "null"],
+          description: "Number of Results (default 5)",
+        },
       },
-      strict: true,
+      required: ["apiKey", "query", "numResults"],
+      additionalProperties: false,
     },
-  };
-
-  async execute(payload: WebSearchParams): Promise<ToolResult<WebSearchData>> {
+    strict: true,
+  },
+  execute: async (
+    payload: WebSearchParams,
+  ): Promise<ToolResult<WebSearchData>> => {
     const { apiKey, query } = payload;
     const numResults = payload.numResults ?? 5;
 
@@ -109,5 +103,7 @@ export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
         results,
       },
     };
-  }
-}
+  },
+};
+
+toolRegistry.register("webSearch", webSearchTool);

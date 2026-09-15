@@ -11,5 +11,6 @@
 // editFile
 // runCommand
 
-export { WikipediaSearchTool } from "./wikipediaSearch";
-export { WikipediaArticleTool } from "./wikipediaArticle";
+export { wikipediaSearchTool } from "./wikipediaSearch";
+export { wikipediaArticleTool } from "./wikipediaArticle";
+export { webSearchTool } from "./webSearch";

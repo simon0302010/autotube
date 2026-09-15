@@ -1,9 +1,5 @@
-import {
-  BaseTool,
-  RegisterTool,
-  type ToolMetadata,
-  type ToolResult,
-} from "./tool";
+import { toolRegistry } from "./toolRegistry";
+import type { ToolMetadata, ToolResult } from "./tool";
 
 interface SearchParams {
   query: string;
@@ -23,37 +19,33 @@ interface SearchResponse {
   };
 }
 
-@RegisterTool("wikipediaSearch")
-export class WikipediaSearchTool extends BaseTool<
-  SearchParams,
-  SearchResult[]
-> {
-  static metadata: ToolMetadata = {
-    definition: {
-      type: "function",
-      name: "wikipediaSearch",
-      description:
-        "Searchs Wikipedia for articles matching given query, returns a list of titles and snippets of matching articles.",
-      parameters: {
-        type: "object",
-        properties: {
-          query: {
-            type: "string",
-            description: "The query for searching articles",
-          },
-          limit: {
-            type: ["number", "null"],
-            description: "Maximum number of results to return (default: 5)",
-          },
+export const wikipediaSearchTool: ToolMetadata<SearchParams, SearchResult[]> = {
+  definition: {
+    type: "function",
+    name: "wikipediaSearch",
+    description:
+      "Searchs Wikipedia for articles matching given query, returns a list of titles and snippets of matching articles.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "The query for searching articles",
         },
-        required: ["query", "limit"],
-        additionalProperties: false,
+        limit: {
+          type: ["number", "null"],
+          description: "Maximum number of results to return (default: 5)",
+        },
       },
-      strict: true,
+      required: ["query", "limit"],
+      additionalProperties: false,
     },
-  };
+    strict: true,
+  },
 
-  async execute(payload: SearchParams): Promise<ToolResult<SearchResult[]>> {
+  execute: async (
+    payload: SearchParams,
+  ): Promise<ToolResult<SearchResult[]>> => {
     const { query } = payload;
     const limit = payload.limit ?? 5;
 
@@ -78,5 +70,7 @@ export class WikipediaSearchTool extends BaseTool<
 
     const data = (await response.json()) as SearchResponse;
     return { success: true, data: data.query.search };
-  }
-}
+  },
+};
+
+toolRegistry.register("wikipediaSearch", wikipediaSearchTool);

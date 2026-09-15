@@ -1,13 +1,12 @@
 import { ConfigManager } from "../../../config";
-import { WebSearchTool } from "../webSearch";
+import { webSearchTool } from "../webSearch";
 
 const configManager = new ConfigManager();
 await configManager.validate();
 
 const apiKey = await configManager.getProviderApiKey("Hack Club AI");
 
-const tool = new WebSearchTool();
-const result = await tool.execute({
+const result = await webSearchTool.execute({
   apiKey: apiKey,
   query: "the big kaboom of 1986",
   numResults: 5,
