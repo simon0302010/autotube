@@ -10,6 +10,7 @@ interface WebSearchParams {
   // However there is an if statement down below which throws an error if apiKey does not exist, so don't worry :p
   apiKey?: string;
   query: string;
+  numResults: number;
 }
 
 interface WebSearchResult {
@@ -50,6 +51,10 @@ export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
             type: "string",
             description: "Search query (max 400 characters)",
           },
+          numResults: {
+            type: "number",
+            description: "Number of Results (default 5)",
+          },
         },
         required: ["query", "apiKey"],
       },
@@ -58,7 +63,7 @@ export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
   };
 
   async execute(payload: WebSearchParams): Promise<ToolResult<WebSearchData>> {
-    const { apiKey, query } = payload;
+    const { apiKey, query, numResults = 5 } = payload;
 
     if (!apiKey) {
       return {
@@ -76,7 +81,7 @@ export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
       },
       body: JSON.stringify({
         query: query,
-        numResults: 5, // TODO: Add argument to control the number of results
+        numResults: numResults, // TODO: Add argument to control the number of results
       }),
     });
 
