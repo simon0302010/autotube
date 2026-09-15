@@ -23,11 +23,13 @@ interface WebSearchData {
 }
 
 interface SearchResponse {
-  results?: {
+  requestId: string;
+  results: {
+    id: string;
     title: string;
     url: string;
-    description: string;
   }[];
+  searchTime: number;
 }
 
 @RegisterTool("webSearch")
@@ -85,7 +87,7 @@ export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
       };
     }
 
-    const data = (await response.json()) as SearchResponse; // TODO: Update interface for new API response
+    const data = (await response.json()) as SearchResponse;
 
     const results: WebSearchResult[] = (data.results ?? []).map((r) => ({
       title: r.title,
