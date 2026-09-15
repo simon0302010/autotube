@@ -114,6 +114,14 @@ export class WikipediaArticleTool extends BaseTool<
         const infoUrl = `https://en.wikipedia.org/w/api.php?${infoParams}`;
 
         const infoResponse = await fetch(infoUrl);
+
+        if (!infoResponse.ok) {
+          return {
+            success: false,
+            error: `Wikipedia Info API error: ${infoResponse.status} ${infoResponse.statusText}`,
+          };
+        }
+
         const infoData = (await infoResponse.json()) as ImageInfoResponse;
 
         const infoPages = Object.values(infoData.query.pages);
