@@ -1,7 +1,10 @@
+import { mkdir } from "node:fs/promises";
+import { ENV_PATHS } from ".";
 import type { ApiSetup } from "./agent/llm";
 import type { ModelList } from "./agent/models";
 import { defaultProviders, type Providers } from "./agent/providers";
-import { input, password, search, select } from "@inquirer/prompts";
+import { confirm, input, password, search, select } from "@inquirer/prompts";
+import { TOML } from "bun";
 
 export const DEFAULT_USE_24_HOUR_TIME: boolean = true;
 
@@ -209,6 +212,21 @@ export class ConfigManager {
     if (!model) {
       throw new Error("Model not found");
     }
+  }
+
+  async saveConfig(path: string): Promise<void> {
+    await mkdir(ENV_PATHS.config, { recursive: true });
+    const config = TOML.stringify(this._config);
+    if (config) Bun.write(path, config);
+  }
+
+  async askSaveConfig(path: string): Promise<void> {
+    if (
+      await confirm({
+        message: `Do you want to save these options to ${path}?`,
+      })
+    )
+      this.saveConfig(path);
   }
 
   /* Checks each config item that is unset and prompts for user input. */

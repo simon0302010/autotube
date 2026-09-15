@@ -27,6 +27,8 @@
   "dependencies": {
     "@inquirer/prompts": "^8.7.2",
     "@opentui/core": "^0.5.11",
+    "commander": "^15.0.0",
+    "env-paths": "^4.0.0",
     "openai": "^7.13.0"
   },
   "lint-staged": {
