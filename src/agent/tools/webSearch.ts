@@ -6,23 +6,16 @@ import {
 } from "./tool";
 
 interface WebSearchParams {
+  // API key is marked optional otherwise TypeScript gets all angry since configManager.config.hackclubSearchApiKey is either undefined or a string.
+  // However there is an if statement down below which throws an error if apiKey does not exist, so don't worry :p
   apiKey?: string;
   query: string;
-  country?: string;
-  search_lang?: string;
-  count?: number;
-  offset?: number;
-  safesearch?: string;
-  freshness?: string;
-  extra_snippets?: boolean;
-  result_filter?: string;
 }
 
 interface WebSearchResult {
   title: string;
   url: string;
-  description: string;
-  snippets?: string[];
+  //description: string;
 }
 
 interface WebSearchData {
@@ -34,7 +27,6 @@ interface SearchResponse {
     title: string;
     url: string;
     description: string;
-    extra_snippets?: string[];
   }[];
 }
 
@@ -50,35 +42,11 @@ export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
         properties: {
           apiKey: {
             type: "string",
-            description: "Hack Club search API key",
+            description: "Hack Club AI API Key (for Exa search proxy)",
           },
           query: {
             type: "string",
-            description: "Search query (max 400 characters, 50 words)",
-          },
-          country: {
-            type: "string",
-            description: "Country code for results (default: US)",
-          },
-          search_lang: {
-            type: "string",
-            description: "Search language (default: en)",
-          },
-          count: {
-            type: "number",
-            description: "Number of results (max 20, default 20)",
-          },
-          offset: {
-            type: "number",
-            description: "Pagination offset",
-          },
-          safesearch: {
-            type: "string",
-            description: "SafeSearch filter: off, moderate, or strict",
-          },
-          freshness: {
-            type: "string",
-            description: "Time filter: pd (24h), pw (7d), pm (31d), py (365)",
+            description: "Search query (max 400 characters)",
           },
         },
         required: ["query", "apiKey"],
@@ -88,50 +56,26 @@ export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
   };
 
   async execute(payload: WebSearchParams): Promise<ToolResult<WebSearchData>> {
-    const {
-      apiKey,
-      query,
-      country = "US",
-      search_lang = "en",
-      count = 20,
-      offset = 0,
-      safesearch = "moderate",
-      freshness,
-      extra_snippets,
-      result_filter,
-    } = payload;
+    const { apiKey, query } = payload;
 
     if (!apiKey) {
       return {
         success: false,
-        error: "Hack Club search API key not configured",
+        error: "Hack Club AI API key not configured",
       };
     }
 
-    const params = new URLSearchParams({
-      q: query,
-      country,
-      search_lang,
-      count: count.toString(),
-      offset: offset.toString(),
-      safesearch,
-    });
-
-    if (freshness) {
-      params.set("freshness", freshness);
-    }
-    if (extra_snippets) {
-      params.set("extra_snippets", "true");
-    }
-    if (result_filter) {
-      params.set("result_filter", result_filter);
-    }
-
-    const apiUrl = `https://search.hackclub.com/res/v1/web/search?${params}`;
+    const apiUrl = `https://ai.hackclub.com/proxy/v1/exa/search`;
     const response = await fetch(apiUrl, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        query: query,
+        numResults: 5, // TODO: Add argument to control the number of results
+      }),
     });
 
     if (!response.ok) {
@@ -141,13 +85,12 @@ export class WebSearchTool extends BaseTool<WebSearchParams, WebSearchData> {
       };
     }
 
-    const data = (await response.json()) as SearchResponse;
+    const data = (await response.json()) as SearchResponse; // TODO: Update interface for new API response
 
     const results: WebSearchResult[] = (data.results ?? []).map((r) => ({
       title: r.title,
       url: r.url,
-      description: r.description,
-      snippets: r.extra_snippets,
+      //description: r.description,
     }));
 
     return {
