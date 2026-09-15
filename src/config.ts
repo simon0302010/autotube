@@ -9,7 +9,7 @@ import { TOML } from "bun";
 export const DEFAULT_USE_24_HOUR_TIME: boolean = true;
 
 export interface AutotubeConfig {
-  providers?: Providers; /* @defaultValue {@link ./providers#defaultProviders} */
+  providers?: Providers; /* @defaultValue {@link ./agent/providers#defaultProviders} */
   provider?: string; /* The provider to use
 
   @remarks
