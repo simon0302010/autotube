@@ -122,14 +122,22 @@ export class ConfigManager {
       throw new Error("Provider not found");
     }
 
-    const response = await fetch(`${provider.baseUrl}/models`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: "Bearer " + this._config.apiKey,
-      },
-      signal: AbortSignal.timeout(10000),
-    });
+    let response;
+    try {
+      response = await fetch(`${provider.baseUrl}/models`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + this._config.apiKey,
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+    } catch (e) {
+      if (e instanceof TypeError) {
+        console.error(`Failed to get models list: ${e.message}`);
+      }
+      process.exit(1);
+    }
 
     if (response.ok) {
       this.models = (await response.json()) as ModelList;
