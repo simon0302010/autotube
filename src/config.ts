@@ -82,6 +82,7 @@ export class ConfigManager {
 
   private async setupApiKey(): Promise<void> {
     let envApiKey: string | undefined;
+    let apiKeyVar: string | undefined;
 
     if (this._config.provider) {
       const provider = this._config.providers?.[this._config.provider];
@@ -89,13 +90,15 @@ export class ConfigManager {
         const envVar = process.env[provider?.apiKeyVar];
         if (envVar && envVar != "") {
           envApiKey = envVar;
+          apiKeyVar = provider?.apiKeyVar;
         }
       }
     }
 
-    const message = envApiKey
-      ? "Input your API key, or press enter to use the environment variable"
-      : "Input your API key";
+    const message =
+      envApiKey && apiKeyVar
+        ? `Input your API key, or press enter to use ${apiKeyVar}`
+        : "Input your API key";
 
     const userInput = await password({
       message,
