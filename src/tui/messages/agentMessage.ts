@@ -1,12 +1,9 @@
 import {
   CliRenderer,
   MarkdownRenderable,
-  RGBA,
-  SyntaxStyle,
-  TextRenderable,
   type Renderable,
 } from "@opentui/core";
-import { hexColor, type ColorRgb } from "../../utils";
+import { type ColorRgb } from "../../utils";
 import { MARKDOWN_SYNTAX_STYLE } from "../styles";
 
 interface AgentMessageOptions {

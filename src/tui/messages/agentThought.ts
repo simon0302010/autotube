@@ -1,18 +1,12 @@
 import {
+  BoxRenderable,
   CliRenderer,
-  KeyEvent,
   MarkdownRenderable,
-  RGBA,
-  SyntaxStyle,
-  TextRenderable,
   type Renderable,
-  type StyleDefinition,
 } from "@opentui/core";
-import { hexColor, type ColorRgb } from "../../utils";
-import { MARKDOWN_SYNTAX_STYLE } from "../styles";
-
-const THOUGHT_PLACEHOLDER: string = "# Click to view thinking process";
-const THOUGHT_PLACEHOLDER_COLOR: string = "#ff9d00";
+import { type ColorRgb } from "../../utils";
+import { MARKDOWN_SYNTAX_THOUGHT_STYLE } from "../styles";
+import { TuiButton } from "../button";
 
 interface AgentThoughtOptions {
   id?: string;
@@ -21,72 +15,48 @@ interface AgentThoughtOptions {
 }
 
 export class AgentThought {
-  private _renderable: MarkdownRenderable;
-  private _content: string;
+  private _renderable: BoxRenderable;
+  private thoughtText: MarkdownRenderable;
+  private expandButton: TuiButton;
   private expanded: boolean;
-  private mouseDown: boolean;
-  private firstHeadingColor: StyleDefinition; // Stores markup.heading.1 style
 
   constructor(renderer: CliRenderer, options: AgentThoughtOptions) {
-    this._renderable = new MarkdownRenderable(renderer, {
+    this._renderable = new BoxRenderable(renderer, {
       id: options.id,
-      content: THOUGHT_PLACEHOLDER,
       width: "auto",
       marginBottom: 1,
       marginLeft: 2,
       marginRight: 2,
-      syntaxStyle: MARKDOWN_SYNTAX_STYLE,
-      onMouseDown: this.onMouseDown.bind(this),
-      onMouseUp: this.onMouseUp.bind(this),
     });
 
-    this.firstHeadingColor = this._renderable.syntaxStyle.getStyle(
-      "markup.heading.1",
-    ) ?? {
-      fg: RGBA.fromHex("#00FF88"),
-      bold: true,
-      underline: true,
-    };
-
-    this._renderable.syntaxStyle.registerStyle("markup.heading.1", {
-      fg: RGBA.fromHex(THOUGHT_PLACEHOLDER_COLOR),
-      bold: true,
+    this.expandButton = new TuiButton(renderer, {
+      label: "Show thinking process",
+      height: -1, // Smallest possible
+      width: -1, // Smallest possible
+      textColor: { r: 220, g: 190, b: 140 },
+      backgroundColor: { r: 55, g: 35, b: 20 },
+      onClick: this.onButtonClick.bind(this),
     });
 
-    this._renderable.selectable = false;
-    this.mouseDown = false;
+    this.thoughtText = new MarkdownRenderable(renderer, {
+      content: options.content,
+      width: "100%",
+      syntaxStyle: MARKDOWN_SYNTAX_THOUGHT_STYLE,
+      marginTop: 1,
+      visible: false,
+    });
+
+    this._renderable.add(this.expandButton.renderable);
+    this._renderable.add(this.thoughtText);
+
     this.expanded = false;
-    this._content = options.content;
   }
 
-  onMouseDown() {
-    if (!this.mouseDown) this.onClick();
-    this.mouseDown = true;
-  }
-
-  onMouseUp() {
-    this.mouseDown = false;
-  }
-
-  onClick() {
-    console.error("clicked");
-
-    if (this.expanded) {
-      this._renderable.content = this.content;
-      this._renderable.selectable = true;
-      this._renderable.syntaxStyle.registerStyle(
-        "markup.heading.1",
-        this.firstHeadingColor,
-      );
-    } else {
-      this._renderable.content = THOUGHT_PLACEHOLDER;
-      this._renderable.selectable = false;
-      this._renderable.syntaxStyle.registerStyle("markup.heading.1", {
-        fg: RGBA.fromHex(THOUGHT_PLACEHOLDER_COLOR),
-        bold: true,
-      });
-    }
+  async onButtonClick() {
     this.expanded = !this.expanded;
+    this.thoughtText.visible = this.expanded;
+    if (this.expanded) this.expandButton.label = "Hide thinking process";
+    else this.expandButton.label = "Show thinking process";
   }
 
   get renderable(): Renderable {
@@ -94,6 +64,6 @@ export class AgentThought {
   }
 
   get content(): string {
-    return this._content;
+    return this.thoughtText.content;
   }
 }

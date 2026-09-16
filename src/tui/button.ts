@@ -18,11 +18,15 @@ interface TuiButtonOptions {
   width?: number | "auto" | `${number}%`; // Must be wider than the label
   height?: number | "auto" | `${number}%`; // Must be > 1
   margin?: number | "auto" | `${number}%`;
+  marginTop?: number | "auto" | `${number}%`;
+  marginBottom?: number | "auto" | `${number}%`;
+  marginLeft?: number | "auto" | `${number}%`;
+  marginRight?: number | "auto" | `${number}%`;
   onClick?: () => void;
 }
 
 export class TuiButton {
-  private label: TextRenderable;
+  private _label: TextRenderable;
   private textColor: ColorRgb;
   private backgroundColor: ColorRgb;
   private onClick?: () => void;
@@ -59,16 +63,20 @@ export class TuiButton {
       onMouseUp: (event: MouseEvent) => this.onUp(event),
       onMouseOut: (event: MouseEvent) => this.onUp(event),
       margin: options.margin,
+      marginTop: options.marginTop,
+      marginRight: options.marginRight,
+      marginBottom: options.marginBottom,
+      marginLeft: options.marginLeft,
       id: options.id,
     });
 
-    this.label = new TextRenderable(renderer, {
+    this._label = new TextRenderable(renderer, {
       content: options.label,
       fg: hexColor(this.textColor),
       selectable: false,
     });
 
-    this._renderable.add(this.label);
+    this._renderable.add(this._label);
   }
 
   get renderable(): Renderable {
@@ -79,11 +87,21 @@ export class TuiButton {
     return this._pressed;
   }
 
+  set label(value: string) {
+    this._label.content = value;
+  }
+
+  get label(): string {
+    return this._label.plainText;
+  }
+
   private onDown(_event: MouseEvent) {
     this._renderable.backgroundColor = hexColor(
       changeColorBrightnessFactor(this.backgroundColor, 0.75),
     );
-    this.label.fg = hexColor(changeColorBrightnessFactor(this.textColor, 0.75));
+    this._label.fg = hexColor(
+      changeColorBrightnessFactor(this.textColor, 0.75),
+    );
 
     if (!this.pressed && this.onClick) {
       this.onClick();
@@ -94,7 +112,7 @@ export class TuiButton {
 
   private onUp(_event: MouseEvent) {
     this._renderable.backgroundColor = hexColor(this.backgroundColor);
-    this.label.fg = hexColor(this.textColor);
+    this._label.fg = hexColor(this.textColor);
 
     this._pressed = false;
   }
