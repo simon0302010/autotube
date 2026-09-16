@@ -70,9 +70,8 @@ async function main() {
         } else if (item.type === "function_call") {
           tui.addAgentMessage(`(called \`${item.name}\`)`);
         } else if (item.type === "reasoning") {
-          tui.addAgentMessage(
-            `(thinking \`${item.content?.[0]?.text || "about nothing"}\`)`,
-          );
+          const thought = item.content?.[0]?.text;
+          if (thought) tui.addAgentThought(thought);
         }
       }
     },

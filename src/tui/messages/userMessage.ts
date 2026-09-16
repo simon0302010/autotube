@@ -4,9 +4,9 @@ import {
   TextRenderable,
   type Renderable,
 } from "@opentui/core";
-import { hexColor, type ColorRgb } from "../utils";
-import { formatTime } from "../utils/time";
-import { DEFAULT_USE_24_HOUR_TIME } from "../config";
+import { hexColor, type ColorRgb } from "../../utils";
+import { formatTime } from "../../utils/time";
+import { DEFAULT_USE_24_HOUR_TIME } from "../../config";
 
 const DEFAULT_BACKGROUND_COLOR: ColorRgb = { r: 30, g: 30, b: 30 };
 const DEFAULT_TEXT_COLOR: ColorRgb = { r: 200, g: 200, b: 200 };

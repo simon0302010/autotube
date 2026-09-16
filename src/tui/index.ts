@@ -7,9 +7,10 @@ import {
   ScrollBoxRenderable,
 } from "@opentui/core";
 import { TuiButton } from "./button";
-import { UserMessage } from "./userMessage";
+import { UserMessage } from "./messages/userMessage";
 import { DEFAULT_USE_24_HOUR_TIME, type ConfigManager } from "../config";
-import { AgentMessage } from "./agentMessage";
+import { AgentMessage } from "./messages/agentMessage";
+import { AgentThought } from "./messages/agentThought";
 
 interface TuiOptions {
   onPromptSend?: (prompt: string) => void;
@@ -19,7 +20,7 @@ export class Tui {
   private renderer!: CliRenderer;
   private promptInput!: InputRenderable; // Needs to be acessible from anywhere in the class.
   private messageArea!: ScrollBoxRenderable;
-  private messages: (UserMessage | AgentMessage)[];
+  private messages: (UserMessage | AgentMessage | AgentThought)[];
 
   private configManager: ConfigManager;
   private onPromptSend?: (prompt: string) => void;
@@ -97,9 +98,8 @@ export class Tui {
     this.promptInput.clearSelection();
     this.promptInput.clear();
 
-    if (prompt == ":q") {
-      this.renderer.destroy();
-    }
+    if (!prompt && prompt === "") return;
+    if (prompt == ":q") this.renderer.destroy();
 
     this.addUserMessage(prompt);
 
@@ -128,5 +128,14 @@ export class Tui {
 
     this.messages.push(agentMessage);
     this.messageArea.add(agentMessage.renderable);
+  }
+
+  async addAgentThought(content: string) {
+    const agentThought = new AgentThought(this.renderer, {
+      content,
+    });
+
+    this.messages.push(agentThought);
+    this.messageArea.add(agentThought.renderable);
   }
 }

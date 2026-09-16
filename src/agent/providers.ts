@@ -22,4 +22,9 @@ export const defaultProviders: Providers = {
     type: "openai",
     apiKeyVar: "OPENROUTER_API_KEY",
   },
+  Groq: {
+    baseUrl: "https://api.groq.com/openai/v1",
+    type: "openai",
+    apiKeyVar: "GROQ_API_KEY",
+  },
 };
