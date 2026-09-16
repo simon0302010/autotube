@@ -120,25 +120,37 @@ export class Tui {
     this.messageArea.add(userMessage.renderable);
   }
 
-  // Just change the type of content to a stream or whatever
-  // I'll implement the rest tomorrow
-  async addAgentMessage(content: string) {
+  // Change stream to an iterator
+  async addAgentMessage(stream: WhatEverTypeYouWant) {
     const agentMessage = new AgentMessage(this.renderer, {
-      content,
+      stream: true,
     });
 
+    // Keeps track of messages
     this.messages.push(agentMessage);
+    // Adds it to the TUI
     this.messageArea.add(agentMessage.renderable);
+
+    // Iterates over the stream adding every chunk
+    for (const chunk of stream) agentMessage.addChunk(chunk);
+    // Needs to be called after the stream finishes for proper formatting
+    agentMessage.finishStream();
   }
 
-  // Just change the type of content to a stream or whatever
-  // I'll implement the rest tomorrow
-  async addAgentThought(content: string) {
+  // Change stream to an iterator
+  async addAgentThought(stream: WhatEverTypeYouWant) {
     const agentThought = new AgentThought(this.renderer, {
-      content,
+      stream: true,
     });
 
+    // Keeps track of messages
     this.messages.push(agentThought);
+    // Adds it to the TUI
     this.messageArea.add(agentThought.renderable);
+
+    // Iterates over the stream adding every chunk
+    for (const chunk of stream) agentThought.addChunk(chunk);
+    // Needs to be called after the stream finishes for proper formatting
+    agentThought.finishStream();
   }
 }

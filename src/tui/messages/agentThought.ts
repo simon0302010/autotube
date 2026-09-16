@@ -8,10 +8,13 @@ import { type ColorRgb } from "../../utils";
 import { MARKDOWN_SYNTAX_THOUGHT_STYLE } from "../styles";
 import { TuiButton } from "../button";
 
+const DEFAULT_STREAM: boolean = false;
+
 interface AgentThoughtOptions {
   id?: string;
-  content: string;
+  content?: string;
   textColor?: ColorRgb;
+  stream?: boolean;
 }
 
 export class AgentThought {
@@ -39,11 +42,12 @@ export class AgentThought {
     });
 
     this.thoughtText = new MarkdownRenderable(renderer, {
-      content: options.content,
+      content: options.content ?? "",
       width: "100%",
       syntaxStyle: MARKDOWN_SYNTAX_THOUGHT_STYLE,
       marginTop: 1,
       visible: false,
+      streaming: options.stream ?? DEFAULT_STREAM,
     });
 
     this._renderable.add(this.expandButton.renderable);
@@ -57,6 +61,14 @@ export class AgentThought {
     this.thoughtText.visible = this.expanded;
     if (this.expanded) this.expandButton.label = "Hide thinking process";
     else this.expandButton.label = "Show thinking process";
+  }
+
+  async addChunk(chunk: string) {
+    if (this.thoughtText.streaming) this.thoughtText.content += chunk;
+  }
+
+  async finishStream() {
+    this.thoughtText.streaming = false;
   }
 
   get renderable(): Renderable {

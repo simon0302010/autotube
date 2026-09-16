@@ -6,10 +6,13 @@ import {
 import { type ColorRgb } from "../../utils";
 import { MARKDOWN_SYNTAX_STYLE } from "../styles";
 
+const DEFAULT_STREAM: boolean = false;
+
 interface AgentMessageOptions {
   id?: string;
-  content: string;
+  content?: string;
   textColor?: ColorRgb;
+  stream?: boolean;
 }
 
 export class AgentMessage {
@@ -18,13 +21,22 @@ export class AgentMessage {
   constructor(renderer: CliRenderer, options: AgentMessageOptions) {
     this._renderable = new MarkdownRenderable(renderer, {
       id: options.id,
-      content: options.content,
+      content: options.content ?? "",
       width: "auto",
       marginBottom: 1,
       marginLeft: 2,
       marginRight: 2,
       syntaxStyle: MARKDOWN_SYNTAX_STYLE,
+      streaming: options.stream ?? DEFAULT_STREAM,
     });
+  }
+
+  async addChunk(chunk: string) {
+    if (this._renderable.streaming) this._renderable.content += chunk;
+  }
+
+  async finishStream() {
+    this._renderable.streaming = false;
   }
 
   get renderable(): Renderable {
