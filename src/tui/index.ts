@@ -120,7 +120,8 @@ export class Tui {
     this.messageArea.add(userMessage.renderable);
   }
 
-  // Adds an agent message to the TUI
+  // Just change the type of content to a stream or whatever
+  // I'll implement the rest tomorrow
   async addAgentMessage(content: string) {
     const agentMessage = new AgentMessage(this.renderer, {
       content,
@@ -130,6 +131,8 @@ export class Tui {
     this.messageArea.add(agentMessage.renderable);
   }
 
+  // Just change the type of content to a stream or whatever
+  // I'll implement the rest tomorrow
   async addAgentThought(content: string) {
     const agentThought = new AgentThought(this.renderer, {
       content,
