@@ -57,7 +57,24 @@ async function main() {
         content: prompt,
       });
 
-      tui.addAgentMessage(String((await session.call()).output_text));
+      const output = await session.call();
+
+      // TODO: Allow different formats for output (within `addAgentMessage`)
+      for (const item of output) {
+        if (item.type === "message") {
+          tui.addAgentMessage(
+            item.content[0]?.type === "output_text"
+              ? item.content[0].text
+              : "Refusal",
+          ); // TODO: expand upon "Refusal"
+        } else if (item.type === "function_call") {
+          tui.addAgentMessage(`(called \`${item.name}\`)`);
+        } else if (item.type === "reasoning") {
+          tui.addAgentMessage(
+            `(thinking \`${item.content?.[0]?.text || "about nothing"}\`)`,
+          );
+        }
+      }
     },
   });
 

@@ -2,6 +2,7 @@ import OpenAI, { APIError } from "openai";
 import type {
   ResponseInput,
   ResponseInputItem,
+  ResponseOutputItem,
 } from "openai/resources/responses/responses.mjs";
 import { toolRegistry } from "./tools/toolRegistry";
 import "./tools";
@@ -30,13 +31,13 @@ export class LLMSession {
     this.history.push(message);
   }
 
-  async call() {
+  async call(): Promise<ResponseOutputItem[]> {
     let response;
     try {
       response = await this.client.responses.create({
         model: this.apiSetup.model,
         input: this.history,
-        tools: toolRegistry.getTools().map((tool) => tool.metadata.definition),
+        tools: toolRegistry.getTools().map((tool) => tool.definition),
       });
     } catch (e) {
       if (e instanceof APIError) {
@@ -52,14 +53,50 @@ export class LLMSession {
       throw e;
     }
 
+    let recallNecessary = false;
+
     for (const step of response.output) {
-      if (step.type == "message") {
-        this.history.push(step);
-      } else if (step.type == "function_call") {
-        // TODO: Handle tool calling
+      // These steps are incompatible with the input item type, so skip them
+      if (
+        step.type === "computer_call_output" ||
+        step.type === "additional_tools"
+      )
+        continue;
+
+      this.history.push(step);
+
+      if (step.type == "function_call") {
+        recallNecessary = true;
+
+        const tool = toolRegistry.get(step.name);
+
+        if (!tool) {
+          console.warn(`Unknown tool: ${step.name}`);
+          this.history.push({
+            type: "function_call_output",
+            call_id: step.call_id,
+            output: JSON.stringify({
+              error: `Tool ${step.name} not found`,
+            }),
+          });
+          continue;
+        }
+
+        const args: unknown = JSON.parse(step.arguments);
+        const result = await tool.execute(args);
+
+        this.history.push({
+          type: "function_call_output",
+          call_id: step.call_id,
+          output: JSON.stringify(result),
+        });
       }
     }
 
-    return response;
+    if (recallNecessary) {
+      return [...response.output, ...(await this.call())];
+    }
+
+    return response.output;
   }
 }
