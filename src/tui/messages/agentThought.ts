@@ -33,8 +33,8 @@ export class AgentThought {
       label: "Show thinking process",
       height: -1, // Smallest possible
       width: -1, // Smallest possible
-      textColor: { r: 220, g: 190, b: 140 },
-      backgroundColor: { r: 55, g: 35, b: 20 },
+      textColor: { r: 255, g: 165, b: 0 },
+      backgroundColor: { r: 50, g: 50, b: 50 },
       onClick: this.onButtonClick.bind(this),
     });
 

@@ -28,7 +28,7 @@ interface TuiButtonOptions {
 export class TuiButton {
   private _label: TextRenderable;
   private textColor: ColorRgb;
-  private backgroundColor: ColorRgb;
+  private backgroundColor?: ColorRgb;
   private onClick?: () => void;
 
   // Only the class should be able to edit these
@@ -37,7 +37,7 @@ export class TuiButton {
 
   constructor(renderer: CliRenderer, options: TuiButtonOptions) {
     this.textColor = options.textColor ?? DEFAULT_TEXT_COLOR;
-    this.backgroundColor = options.backgroundColor ?? DEFAULT_BACKGROUND_COLOR;
+    this.backgroundColor = options.backgroundColor;
     this.onClick = options.onClick;
     this._pressed = false;
 
@@ -56,7 +56,9 @@ export class TuiButton {
     this._renderable = new BoxRenderable(renderer, {
       width,
       height,
-      backgroundColor: hexColor(this.backgroundColor),
+      backgroundColor: this.backgroundColor
+        ? hexColor(this.backgroundColor)
+        : undefined,
       alignItems: "center",
       justifyContent: "center",
       onMouseDown: (event: MouseEvent) => this.onDown(event),
@@ -96,9 +98,10 @@ export class TuiButton {
   }
 
   private onDown(_event: MouseEvent) {
-    this._renderable.backgroundColor = hexColor(
-      changeColorBrightnessFactor(this.backgroundColor, 0.75),
-    );
+    if (this.backgroundColor)
+      this._renderable.backgroundColor = hexColor(
+        changeColorBrightnessFactor(this.backgroundColor, 0.75),
+      );
     this._label.fg = hexColor(
       changeColorBrightnessFactor(this.textColor, 0.75),
     );
@@ -111,7 +114,8 @@ export class TuiButton {
   }
 
   private onUp(_event: MouseEvent) {
-    this._renderable.backgroundColor = hexColor(this.backgroundColor);
+    if (this.backgroundColor)
+      this._renderable.backgroundColor = hexColor(this.backgroundColor);
     this._label.fg = hexColor(this.textColor);
 
     this._pressed = false;
