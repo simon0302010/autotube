@@ -12,7 +12,7 @@ import { hexColor, type ColorRgb } from "../../utils";
 import { MARKDOWN_SYNTAX_STYLE } from "../styles";
 
 const THOUGHT_PLACEHOLDER: string = "# Click to view thinking process";
-const THOUGHT_PLACEHOLDER_COLOR: string = "#ffd900";
+const THOUGHT_PLACEHOLDER_COLOR: string = "#ff9d00";
 
 interface AgentThoughtOptions {
   id?: string;
