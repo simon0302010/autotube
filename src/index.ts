@@ -61,17 +61,13 @@ async function main() {
 
       // TODO: Allow different formats for output (within `addAgentMessage`)
       for await (const item of output) {
-        if (item.type === "message") {
-          tui.addAgentMessage(
-            item.content[0]?.type === "output_text"
-              ? item.content[0].text
-              : "Refusal",
-          ); // TODO: expand upon "Refusal"
+        if (item.type === "message" && "stream" in item) {
+          tui.addAgentMessage(item); // TODO: expand upon "Refusal"
         } else if (item.type === "function_call") {
-          tui.addAgentMessage(`(called \`${item.name}\`)`);
-        } else if (item.type === "reasoning") {
-          const thought = item.content?.[0]?.text;
-          if (thought) tui.addAgentThought(thought);
+          // TODO: Add support for function calls
+          // tui.addAgentMessage(`(called \`${item.name}\`)`);
+        } else if (item.type === "reasoning" && "stream" in item) {
+          tui.addAgentThought(item);
         }
       }
     },

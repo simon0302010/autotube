@@ -11,6 +11,7 @@ import { UserMessage } from "./messages/userMessage";
 import { DEFAULT_USE_24_HOUR_TIME, type ConfigManager } from "../config";
 import { AgentMessage } from "./messages/agentMessage";
 import { AgentThought } from "./messages/agentThought";
+import type { StreamableMessage, StreamableReasoning } from "../agent/llm";
 
 interface TuiOptions {
   onPromptSend?: (prompt: string) => void;
@@ -121,7 +122,7 @@ export class Tui {
   }
 
   // Change stream to an iterator
-  async addAgentMessage(stream: WhatEverTypeYouWant) {
+  async addAgentMessage(message: StreamableMessage) {
     const agentMessage = new AgentMessage(this.renderer, {
       stream: true,
     });
@@ -132,13 +133,13 @@ export class Tui {
     this.messageArea.add(agentMessage.renderable);
 
     // Iterates over the stream adding every chunk
-    for (const chunk of stream) agentMessage.addChunk(chunk);
+    for await (const chunk of message.stream) agentMessage.addChunk(chunk);
     // Needs to be called after the stream finishes for proper formatting
     agentMessage.finishStream();
   }
 
   // Change stream to an iterator
-  async addAgentThought(stream: WhatEverTypeYouWant) {
+  async addAgentThought(thought: StreamableReasoning) {
     const agentThought = new AgentThought(this.renderer, {
       stream: true,
     });
@@ -149,7 +150,7 @@ export class Tui {
     this.messageArea.add(agentThought.renderable);
 
     // Iterates over the stream adding every chunk
-    for (const chunk of stream) agentThought.addChunk(chunk);
+    for await (const chunk of thought.stream) agentThought.addChunk(chunk);
     // Needs to be called after the stream finishes for proper formatting
     agentThought.finishStream();
   }

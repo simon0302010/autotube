@@ -3,15 +3,30 @@ import type {
   ResponseInput,
   ResponseInputItem,
   ResponseOutputItem,
+  ResponseReasoningTextDeltaEvent,
 } from "openai/resources/responses/responses.mjs";
 import { toolRegistry } from "./tools/toolRegistry";
 import "./tools";
+import { AsyncQueue } from "../utils";
 
 export interface ApiSetup {
   apiKey: string;
   baseUrl: string;
   model?: string;
 }
+
+export type StreamableMessage = {
+  type: "message";
+  stream: AsyncIterable<string>;
+};
+
+export type StreamableReasoning = {
+  type: "reasoning";
+  stream: AsyncIterable<string>;
+};
+
+export type StreamableItem =
+  StreamableMessage | StreamableReasoning | ResponseOutputItem;
 
 export class LLMSession {
   apiSetup: ApiSetup;
@@ -31,10 +46,10 @@ export class LLMSession {
     this.history.push(message);
   }
 
-  async *call(): AsyncGenerator<ResponseOutputItem> {
-    let response;
+  async *call(): AsyncGenerator<StreamableItem> {
+    let responseStream;
     try {
-      response = await this.client.responses.create({
+      responseStream = await this.client.responses.stream({
         model: this.apiSetup.model,
         input: this.history,
         tools: toolRegistry.getTools().map((tool) => tool.definition),
@@ -52,6 +67,69 @@ export class LLMSession {
       }
       throw e;
     }
+
+    const itemQueue = new AsyncQueue<StreamableItem>();
+    let currentTextQueue: AsyncQueue<string> | null = null;
+    let currentReasoningQueue: AsyncQueue<string> | null = null;
+
+    // When an output item begins, create its delta queue and yield the item to the outer stream
+    responseStream.on("response.output_item.added", (event) => {
+      if (event.item.type === "message") {
+        currentTextQueue = new AsyncQueue<string>();
+        itemQueue.push({
+          type: "message",
+          stream: currentTextQueue,
+        });
+      } else if (event.item.type === "reasoning") {
+        currentReasoningQueue = new AsyncQueue<string>();
+        itemQueue.push({
+          type: "reasoning",
+          stream: currentReasoningQueue,
+        });
+      } else {
+        // e.g. function_call or other items
+        itemQueue.push(event.item);
+      }
+    });
+
+    // Route text and reasoning chunks to their respective active queues
+    responseStream.on("response.output_text.delta", (event) => {
+      currentTextQueue?.push(event.delta);
+    });
+
+    responseStream.on(
+      "response.reasoning_text.delta",
+      (event: ResponseReasoningTextDeltaEvent) => {
+        currentReasoningQueue?.push(event.delta);
+      },
+    );
+
+    // Close the inner chunk queue when the output item completes
+    responseStream.on("response.output_item.done", (event) => {
+      if (event.item.type === "message") {
+        currentTextQueue?.done();
+        currentTextQueue = null;
+      } else if (event.item.type === "reasoning") {
+        currentReasoningQueue?.done();
+        currentReasoningQueue = null;
+      }
+    });
+
+    // This will forward any errors
+    const finalResponsePromise = responseStream
+      .finalResponse()
+      .then((res) => {
+        itemQueue.done();
+        return res;
+      })
+      .catch((err) => {
+        itemQueue.fail(err);
+        throw err;
+      });
+
+    yield* itemQueue;
+
+    const response = await finalResponsePromise;
 
     let recallNecessary = false;
 
@@ -94,10 +172,7 @@ export class LLMSession {
     }
 
     if (recallNecessary) {
-      yield* response.output;
       yield* this.call();
     }
-
-    yield* response.output;
   }
 }
