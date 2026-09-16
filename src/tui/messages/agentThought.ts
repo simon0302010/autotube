@@ -6,8 +6,10 @@ import {
   SyntaxStyle,
   TextRenderable,
   type Renderable,
+  type StyleDefinition,
 } from "@opentui/core";
 import { hexColor, type ColorRgb } from "../../utils";
+import { MARKDOWN_SYNTAX_STYLE } from "../styles";
 
 const THOUGHT_PLACEHOLDER: string = "# Click to view thinking process";
 const THOUGHT_PLACEHOLDER_COLOR: string = "#ffd900";
@@ -23,18 +25,9 @@ export class AgentThought {
   private _content: string;
   private expanded: boolean;
   private mouseDown: boolean;
+  private firstHeadingColor: StyleDefinition; // Stores markup.heading.1 style
 
   constructor(renderer: CliRenderer, options: AgentThoughtOptions) {
-    const syntaxStyle = SyntaxStyle.fromStyles({
-      "markup.heading.1": {
-        fg: RGBA.fromHex(THOUGHT_PLACEHOLDER_COLOR),
-        bold: true,
-      },
-      "markup.list": { fg: RGBA.fromHex("#9f5852") },
-      "markup.raw": { fg: RGBA.fromHex("#4c6b85") },
-      default: { fg: RGBA.fromHex("#808080") },
-    });
-
     this._renderable = new MarkdownRenderable(renderer, {
       id: options.id,
       content: THOUGHT_PLACEHOLDER,
@@ -42,9 +35,22 @@ export class AgentThought {
       marginBottom: 1,
       marginLeft: 2,
       marginRight: 2,
-      syntaxStyle,
+      syntaxStyle: MARKDOWN_SYNTAX_STYLE,
       onMouseDown: this.onMouseDown.bind(this),
       onMouseUp: this.onMouseUp.bind(this),
+    });
+
+    this.firstHeadingColor = this._renderable.syntaxStyle.getStyle(
+      "markup.heading.1",
+    ) ?? {
+      fg: RGBA.fromHex("#00FF88"),
+      bold: true,
+      underline: true,
+    };
+
+    this._renderable.syntaxStyle.registerStyle("markup.heading.1", {
+      fg: RGBA.fromHex(THOUGHT_PLACEHOLDER_COLOR),
+      bold: true,
     });
 
     this._renderable.selectable = false;
@@ -68,10 +74,10 @@ export class AgentThought {
     if (this.expanded) {
       this._renderable.content = this.content;
       this._renderable.selectable = true;
-      this._renderable.syntaxStyle.registerStyle("markup.heading.1", {
-        fg: RGBA.fromHex("#5e7997"),
-        bold: true,
-      });
+      this._renderable.syntaxStyle.registerStyle(
+        "markup.heading.1",
+        this.firstHeadingColor,
+      );
     } else {
       this._renderable.content = THOUGHT_PLACEHOLDER;
       this._renderable.selectable = false;
