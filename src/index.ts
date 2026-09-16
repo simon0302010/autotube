@@ -60,7 +60,7 @@ async function main() {
       const output = await session.call();
 
       // TODO: Allow different formats for output (within `addAgentMessage`)
-      for (const item of output) {
+      for await (const item of output) {
         if (item.type === "message") {
           tui.addAgentMessage(
             item.content[0]?.type === "output_text"

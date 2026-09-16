@@ -31,7 +31,7 @@ export class LLMSession {
     this.history.push(message);
   }
 
-  async call(): Promise<ResponseOutputItem[]> {
+  async *call(): AsyncGenerator<ResponseOutputItem> {
     let response;
     try {
       response = await this.client.responses.create({
@@ -94,9 +94,10 @@ export class LLMSession {
     }
 
     if (recallNecessary) {
-      return [...response.output, ...(await this.call())];
+      yield* response.output;
+      yield* this.call();
     }
 
-    return response.output;
+    yield* response.output;
   }
 }
