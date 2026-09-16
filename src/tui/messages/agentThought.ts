@@ -1,7 +1,16 @@
-import { CliRenderer, TextRenderable, type Renderable } from "@opentui/core";
+import {
+  CliRenderer,
+  KeyEvent,
+  MarkdownRenderable,
+  RGBA,
+  SyntaxStyle,
+  TextRenderable,
+  type Renderable,
+} from "@opentui/core";
 import { hexColor, type ColorRgb } from "../../utils";
 
-const DEFAULT_TEXT_COLOR: ColorRgb = { r: 150, g: 150, b: 150 };
+const THOUGHT_PLACEHOLDER: string = "# Click to view thinking process";
+const THOUGHT_PLACEHOLDER_COLOR: string = "#ffd900";
 
 interface AgentThoughtOptions {
   id?: string;
@@ -10,18 +19,68 @@ interface AgentThoughtOptions {
 }
 
 export class AgentThought {
-  private _renderable: TextRenderable;
+  private _renderable: MarkdownRenderable;
+  private _content: string;
+  private expanded: boolean;
+  private mouseDown: boolean;
 
   constructor(renderer: CliRenderer, options: AgentThoughtOptions) {
-    this._renderable = new TextRenderable(renderer, {
+    const syntaxStyle = SyntaxStyle.fromStyles({
+      "markup.heading.1": {
+        fg: RGBA.fromHex(THOUGHT_PLACEHOLDER_COLOR),
+        bold: true,
+      },
+      "markup.list": { fg: RGBA.fromHex("#9f5852") },
+      "markup.raw": { fg: RGBA.fromHex("#4c6b85") },
+      default: { fg: RGBA.fromHex("#808080") },
+    });
+
+    this._renderable = new MarkdownRenderable(renderer, {
       id: options.id,
-      content: options.content,
+      content: THOUGHT_PLACEHOLDER,
       width: "auto",
-      fg: hexColor(options.textColor ?? DEFAULT_TEXT_COLOR),
       marginBottom: 1,
       marginLeft: 2,
       marginRight: 2,
+      syntaxStyle,
+      onMouseDown: this.onMouseDown.bind(this),
+      onMouseUp: this.onMouseUp.bind(this),
     });
+
+    this._renderable.selectable = false;
+    this.mouseDown = false;
+    this.expanded = false;
+    this._content = options.content;
+  }
+
+  onMouseDown() {
+    if (!this.mouseDown) this.onClick();
+    this.mouseDown = true;
+  }
+
+  onMouseUp() {
+    this.mouseDown = false;
+  }
+
+  onClick() {
+    console.error("clicked");
+
+    if (this.expanded) {
+      this._renderable.content = this.content;
+      this._renderable.selectable = true;
+      this._renderable.syntaxStyle.registerStyle("markup.heading.1", {
+        fg: RGBA.fromHex("#5e7997"),
+        bold: true,
+      });
+    } else {
+      this._renderable.content = THOUGHT_PLACEHOLDER;
+      this._renderable.selectable = false;
+      this._renderable.syntaxStyle.registerStyle("markup.heading.1", {
+        fg: RGBA.fromHex(THOUGHT_PLACEHOLDER_COLOR),
+        bold: true,
+      });
+    }
+    this.expanded = !this.expanded;
   }
 
   get renderable(): Renderable {
@@ -29,6 +88,6 @@ export class AgentThought {
   }
 
   get content(): string {
-    return this._renderable.plainText;
+    return this._content;
   }
 }
