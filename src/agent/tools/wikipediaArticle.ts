@@ -199,7 +199,11 @@ export const wikipediaArticleTool: ToolMetadata<ArticleParams, ArticleResult> =
             const localPath = path.join(ENV_PATHS.temp, filename);
 
             try {
-              const imgReponse = await fetch(info.url);
+              const imgReponse = await fetch(info.url, {
+                headers: {
+                  "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
+                },
+              });
 
               if (imgReponse.ok) {
                 const blob = await imgReponse.blob();
