@@ -1,5 +1,6 @@
 import { toolRegistry } from "./toolRegistry";
 import type { ToolMetadata, ToolResult } from "./tool";
+import path from "path";
 
 interface ReadFileParams {
   path: string;
@@ -24,7 +25,8 @@ export const readFileTool: ToolMetadata<ReadFileParams, string> = {
     strict: true,
   },
   execute: async (payload: ReadFileParams): Promise<ToolResult<string>> => {
-    const file = Bun.file(payload.path);
+    const resolvedPath = path.resolve(payload.path);
+    const file = Bun.file(resolvedPath);
 
     if (!(await file.exists())) {
       return {
