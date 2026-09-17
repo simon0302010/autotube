@@ -2,7 +2,7 @@ import { toolRegistry } from "./toolRegistry";
 import type { ToolMetadata, ToolResult } from "./tool";
 
 interface WebSearchParams {
-  apiKey?: string;
+  apiKey?: string | null;
   query: string;
   numResults?: number | null;
 }
