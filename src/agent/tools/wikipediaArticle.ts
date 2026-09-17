@@ -1,5 +1,8 @@
 import { toolRegistry } from "./toolRegistry";
 import type { ToolMetadata, ToolResult } from "./tool";
+import { ENV_PATHS } from "../..";
+import path from "path";
+import { mkdir } from "node:fs/promises";
 
 interface ArticleParams {
   title: string;
@@ -11,6 +14,7 @@ interface ArticleImage {
   url: string;
   width: number;
   height: number;
+  localPath: string;
 }
 
 interface ArticleResult {
@@ -147,6 +151,7 @@ export const wikipediaArticleTool: ToolMetadata<ArticleParams, ArticleResult> =
       const imageData = (await imageResponse.json()) as ImagesResponse;
 
       const images: ArticleImage[] = [];
+      await mkdir(ENV_PATHS.temp, { recursive: true });
 
       if (imageData.query) {
         const pages = Object.values(imageData.query.pages);
@@ -183,11 +188,45 @@ export const wikipediaArticleTool: ToolMetadata<ArticleParams, ArticleResult> =
           const info = infoPages[0]?.imageinfo?.[0];
 
           if (info) {
+            const extension =
+              path.extname(new URL(info.url).pathname) || ".png";
+            const sanitizedName = image.title
+              .replace(/^File:/i, "")
+              .replace(/[^\w.-]/g, "_")
+              .replace(/_+/g, "_");
+
+            const filename = `${sanitizedName}_${Date.now()}${extension}`;
+            const localPath = path.join(ENV_PATHS.temp, filename);
+
+            try {
+              const imgReponse = await fetch(info.url);
+
+              if (imgReponse.ok) {
+                const blob = await imgReponse.blob();
+                await Bun.write(localPath, blob);
+              } else {
+                return {
+                  success: false,
+                  error: `Wikipedia Image API error: ${imgReponse.status} ${imgReponse.statusText}`,
+                };
+              }
+            } catch {
+              images.push({
+                title: image.title,
+                url: info.url,
+                width: info.width,
+                height: info.height,
+                localPath: "",
+              });
+              continue;
+            }
+
             images.push({
               title: image.title,
               url: info.url,
               width: info.width,
               height: info.height,
+              localPath,
             });
           }
         }
