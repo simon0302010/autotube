@@ -1,10 +1,20 @@
 import { toolRegistry } from "./toolRegistry";
 import type { ToolMetadata, ToolResult } from "./tool";
 import path from "path";
+import { bgBlue } from "@opentui/core";
 
 interface ReadFileParams {
   path: string;
 }
+
+const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"];
+const MIME_MAP: Record<string, string> = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+};
 
 export const readFileTool: ToolMetadata<ReadFileParams, string> = {
   definition: {
@@ -32,6 +42,19 @@ export const readFileTool: ToolMetadata<ReadFileParams, string> = {
       return {
         success: false,
         error: `File not found: ${payload.path}`,
+      };
+    }
+
+    const extension = path.extname(resolvedPath).toLowerCase();
+
+    if (IMAGE_EXTENSIONS.includes(extension)) {
+      const buffer = await file.arrayBuffer();
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      const mime = MIME_MAP[extension] ?? "image/png";
+
+      return {
+        success: true,
+        data: `data:${mime};base64,${base64}`,
       };
     }
 
