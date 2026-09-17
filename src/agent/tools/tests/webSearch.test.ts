@@ -1,5 +1,5 @@
-import { ConfigManager } from "../../../config";
 import { webSearchTool } from "../webSearch";
+import { ConfigManager } from "../../../config";
 
 const configManager = new ConfigManager();
 await configManager.validate();

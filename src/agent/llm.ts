@@ -5,9 +5,11 @@ import type {
   ResponseOutputItem,
   ResponseReasoningTextDeltaEvent,
 } from "openai/resources/responses/responses.mjs";
+import type { ConfigManager } from "../config";
 import { toolRegistry } from "./tools/toolRegistry";
 import "./tools";
 import { AsyncQueue } from "../utils";
+import type { Config } from "eslint/config";
 
 export interface ApiSetup {
   apiKey: string;
@@ -30,11 +32,13 @@ export type StreamableItem =
 
 export class LLMSession {
   apiSetup: ApiSetup;
+  configManager: ConfigManager;
   history: ResponseInput;
   client: OpenAI;
 
-  constructor(apiSetup: ApiSetup) {
+  constructor(apiSetup: ApiSetup, configManager: ConfigManager) {
     this.apiSetup = apiSetup;
+    this.configManager = configManager;
     this.history = [];
     this.client = new OpenAI({
       apiKey: apiSetup.apiKey,
@@ -161,7 +165,13 @@ export class LLMSession {
           continue;
         }
 
-        const args: unknown = JSON.parse(step.arguments);
+        const args = JSON.parse(step.arguments) as Record<string, unknown>;
+
+        if (step.name === "webSearch") {
+          args.apiKey =
+            await this.configManager.getProviderApiKey("Hack Club AI");
+        }
+
         const result = await tool.execute(args);
 
         this.history.push({

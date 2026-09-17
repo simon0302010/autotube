@@ -2,9 +2,7 @@ import { toolRegistry } from "./toolRegistry";
 import type { ToolMetadata, ToolResult } from "./tool";
 
 interface WebSearchParams {
-  // API key is marked optional otherwise TypeScript gets all angry since configManager.config.hackclubSearchApiKey is either undefined or a string.
-  // However there is an if statement down below which throws an error if apiKey does not exist, so don't worry :p
-  apiKey?: string | null;
+  apiKey?: string;
   query: string;
   numResults?: number | null;
 }
@@ -37,10 +35,6 @@ export const webSearchTool: ToolMetadata<WebSearchParams, WebSearchData> = {
     parameters: {
       type: "object",
       properties: {
-        apiKey: {
-          type: "string",
-          description: "Hack Club AI API Key (for Exa search proxy)",
-        },
         query: {
           type: "string",
           description: "Search query (max 400 characters)",
@@ -50,7 +44,7 @@ export const webSearchTool: ToolMetadata<WebSearchParams, WebSearchData> = {
           description: "Number of Results (default 5)",
         },
       },
-      required: ["apiKey", "query", "numResults"],
+      required: ["query", "numResults"],
       additionalProperties: false,
     },
     strict: true,
