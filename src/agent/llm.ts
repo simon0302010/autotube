@@ -58,6 +58,8 @@ export class LLMSession {
         input: this.history,
         tools: toolRegistry.getTools().map((tool) => tool.definition),
         max_output_tokens: 16384, // TODO: Find a better way to adjust this
+        instructions:
+          "You are an helpful AI agent and not running in a sandbox. Everything tool you call will be run on the user's machine.",
       });
     } catch (e) {
       if (e instanceof APIError) {

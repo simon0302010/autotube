@@ -54,6 +54,8 @@ export class Tui {
       width: "100%",
       height: "100%",
       marginBottom: 1,
+      stickyScroll: true,
+      stickyStart: "bottom",
     });
 
     const promptBar = new BoxRenderable(this.renderer, {
