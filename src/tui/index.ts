@@ -12,6 +12,8 @@ import { DEFAULT_USE_24_HOUR_TIME, type ConfigManager } from "../config";
 import { AgentMessage } from "./messages/agentMessage";
 import { AgentThought } from "./messages/agentThought";
 import type { StreamableMessage, StreamableReasoning } from "../agent/llm";
+import { AgentFunctionCall } from "./messages/agentFunctionCall";
+import type { ResponseFunctionToolCall } from "openai/resources/responses/responses.mjs";
 
 interface TuiOptions {
   onPromptSend?: (prompt: string) => void;
@@ -153,5 +155,18 @@ export class Tui {
     for await (const chunk of thought.stream) agentThought.addChunk(chunk);
     // Needs to be called after the stream finishes for proper formatting
     agentThought.finishStream();
+  }
+
+  async addFunctionCall(call: ResponseFunctionToolCall) {
+    const agentFunctionCall = new AgentFunctionCall(this.renderer, {
+      functionName: call.name,
+      functionArguments: JSON.stringify(call.arguments, null, 2),
+      callId: call.id ?? "Unknown call ID",
+    });
+
+    // Keeps track of messages
+    //this.messages.push(agentFunctionCall);
+    // Adds it to the TUI
+    this.messageArea.add(agentFunctionCall.renderable);
   }
 }
