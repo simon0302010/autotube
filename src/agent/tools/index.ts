@@ -14,3 +14,4 @@
 export { wikipediaSearchTool } from "./wikipediaSearch";
 export { wikipediaArticleTool } from "./wikipediaArticle";
 export { webSearchTool } from "./webSearch";
+export { readFileTool } from "./readFile";
