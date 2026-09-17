@@ -23,7 +23,9 @@ export class Tui {
   private renderer!: CliRenderer;
   private promptInput!: InputRenderable; // Needs to be acessible from anywhere in the class.
   private messageArea!: ScrollBoxRenderable;
-  private messages: (UserMessage | AgentMessage | AgentThought)[];
+  private messages: (
+    UserMessage | AgentMessage | AgentThought | AgentFunctionCall
+  )[];
 
   private configManager: ConfigManager;
   private onPromptSend?: (prompt: string) => void;
@@ -158,14 +160,18 @@ export class Tui {
   }
 
   async addFunctionCall(call: ResponseFunctionToolCall) {
+    const lastMessage = this.messages.at(-1);
+    // Pack function calls together
+    if (lastMessage instanceof AgentFunctionCall) lastMessage.marginBottom = 0;
+
     const agentFunctionCall = new AgentFunctionCall(this.renderer, {
       functionName: call.name,
-      functionArguments: JSON.stringify(call.arguments, null, 2),
+      functionArguments: call.arguments,
       callId: call.id ?? "Unknown call ID",
     });
 
     // Keeps track of messages
-    //this.messages.push(agentFunctionCall);
+    this.messages.push(agentFunctionCall);
     // Adds it to the TUI
     this.messageArea.add(agentFunctionCall.renderable);
   }

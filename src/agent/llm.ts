@@ -53,6 +53,7 @@ export class LLMSession {
         model: this.apiSetup.model,
         input: this.history,
         tools: toolRegistry.getTools().map((tool) => tool.definition),
+        max_output_tokens: 16384, // TODO: Find a better way to adjust this
       });
     } catch (e) {
       if (e instanceof APIError) {
