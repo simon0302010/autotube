@@ -50,6 +50,7 @@ export class AgentFunctionCall {
       syntaxStyle: MARKDOWN_SYNTAX_THOUGHT_STYLE, // TODO: Create a style for function calls
       marginTop: 1,
       visible: false,
+      streaming: options.stream ?? DEFAULT_STREAM,
     });
 
     this._renderable.add(this.expandButton.renderable);
