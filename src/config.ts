@@ -138,6 +138,8 @@ export class ConfigManager {
     } catch (e) {
       if (e instanceof TypeError) {
         console.error(`Failed to get models list: ${e.message}`);
+      } else if (e instanceof DOMException) {
+        console.error(`Failed to get models list: ${e.message}`);
       } else {
         console.error(e);
       }
