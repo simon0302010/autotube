@@ -15,6 +15,7 @@ import type { StreamableMessage, StreamableReasoning } from "../agent/llm";
 import { AgentFunctionCall } from "./messages/agentFunctionCall";
 import type { ResponseFunctionToolCall } from "openai/resources/responses/responses.mjs";
 import clipboard from "clipboardy";
+import { TuiNotification } from "./notification";
 
 interface TuiOptions {
   onPromptSend?: (prompt: string) => void;
@@ -95,12 +96,13 @@ export class Tui {
     box.add(promptBar);
     this.renderer.root.add(box);
 
+    // Copies selected text to the clipboard
     this.renderer.on("selection", async (selection) => {
       if (!selection) return;
       const text = selection.getSelectedText();
       if (text && text != "") await clipboard.write(text);
       this.renderer.clearSelection();
-      // TODO: Open a popup saying the text was copied
+      this.displayNotification("Copied to clipboard", 3000);
     });
 
     // Focuses the prompt so the user doesn't have to.
@@ -185,5 +187,11 @@ export class Tui {
     this.messages.push(agentFunctionCall);
     // Adds it to the TUI
     this.messageArea.add(agentFunctionCall.renderable);
+  }
+
+  // Displays a notification
+  async displayNotification(content: string, duration: number) {
+    const notif = new TuiNotification(this.renderer, { content });
+    await notif.display(duration);
   }
 }
