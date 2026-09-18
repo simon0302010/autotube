@@ -14,6 +14,7 @@ import { AgentThought } from "./messages/agentThought";
 import type { StreamableMessage, StreamableReasoning } from "../agent/llm";
 import { AgentFunctionCall } from "./messages/agentFunctionCall";
 import type { ResponseFunctionToolCall } from "openai/resources/responses/responses.mjs";
+import clipboard from "clipboardy";
 
 interface TuiOptions {
   onPromptSend?: (prompt: string) => void;
@@ -93,6 +94,14 @@ export class Tui {
     box.add(this.messageArea);
     box.add(promptBar);
     this.renderer.root.add(box);
+
+    this.renderer.on("selection", async (selection) => {
+      if (!selection) return;
+      const text = selection.getSelectedText();
+      if (text && text != "") await clipboard.write(text);
+      this.renderer.clearSelection();
+      // TODO: Open a popup saying the text was copied
+    });
 
     // Focuses the prompt so the user doesn't have to.
     // Consider removing this when adding more inputs.
