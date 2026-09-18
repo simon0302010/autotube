@@ -1,13 +1,5 @@
-import {
-  BoxRenderable,
-  CliRenderer,
-  MarkdownRenderable,
-  TextRenderable,
-  type Renderable,
-} from "@opentui/core";
+import { CliRenderer, TextRenderable, type Renderable } from "@opentui/core";
 import { type ColorRgb } from "../../utils";
-import { MARKDOWN_SYNTAX_THOUGHT_STYLE } from "../styles";
-import { TuiButton } from "../button";
 
 interface AgentFunctionCallOptions {
   id?: string;

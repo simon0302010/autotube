@@ -7,7 +7,6 @@ import {
 } from "@opentui/core";
 import { changeColorBrightnessFactor, hexColor, type ColorRgb } from "../utils";
 
-const DEFAULT_BACKGROUND_COLOR: ColorRgb = { r: 200, g: 0, b: 0 };
 const DEFAULT_TEXT_COLOR: ColorRgb = { r: 0, g: 0, b: 0 };
 
 interface TuiButtonOptions {

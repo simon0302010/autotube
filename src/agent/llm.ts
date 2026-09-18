@@ -9,7 +9,6 @@ import type { ConfigManager } from "../config";
 import { toolRegistry } from "./tools/toolRegistry";
 import "./tools";
 import { AsyncQueue } from "../utils";
-import type { Config } from "eslint/config";
 
 export interface ApiSetup {
   apiKey: string;
