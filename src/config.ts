@@ -34,6 +34,28 @@ export interface AutotubeConfig {
   @remarks
   If `model` is not found in the list, an error will be thrown. */
 
+  autoRetry?: boolean; /* Automatically retry if an API error occurs
+
+  @defaultValue true */
+
+  autoRetryDelayMs?: number; /* Delay between retries in milliseconds
+
+  @defaultValue 1000
+  @remarks
+  Only relevant if `autoRetry` is true. When set to 0, there will be no delay between retries. */
+
+  autoRetryDelayIncreaseFactor?: number; /* Factor by which the delay increases each retry
+
+  @defaultValue 2
+  @remarks
+  Only relevant if `autoRetry` is true. If less than or equal to 1, the delay will not increase. */
+
+  autoRetryMaxRetries?: number; /* Maximum number of retries
+
+  @defaultValue 10
+  @remarks
+  Only relevant if `autoRetry` is true. Set to -1 for unlimited retries (not recommended). */
+
   use24HourTime?: boolean; /* Whether to use the 24-hour time format in the TUI
 
   @remarks
@@ -44,6 +66,10 @@ export interface AutotubeConfig {
 export const defaultConfig: AutotubeConfig = {
   providers: defaultProviders,
   checkModels: true,
+  autoRetry: true,
+  autoRetryDelayMs: 1000,
+  autoRetryDelayIncreaseFactor: 2,
+  autoRetryMaxRetries: 10,
 };
 
 // TODO: Integrate prompts with dedicated TUI
@@ -300,7 +326,18 @@ export class ConfigManager {
     const baseUrl = this._config.providers![this._config.provider]?.baseUrl;
     if (!baseUrl) return undefined;
 
-    return { baseUrl, apiKey: this._config.apiKey, model: this._config.model };
+    return {
+      baseUrl,
+      apiKey: this._config.apiKey,
+      model: this._config.model,
+      autoRetry: this._config.autoRetry
+        ? {
+            delayMs: this._config.autoRetryDelayMs!,
+            delayIncreaseFactor: this._config.autoRetryDelayIncreaseFactor!,
+            maxRetries: this._config.autoRetryMaxRetries!,
+          }
+        : undefined,
+    };
   }
 
   // Returns the configured apiKey if `provider` matches

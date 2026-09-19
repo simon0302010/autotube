@@ -48,7 +48,9 @@ async function main() {
   const apiSetup = await configManager.getApiSetup();
   if (!apiSetup) throw new Error("API setup failed");
 
-  const session = new LLMSession(apiSetup, configManager);
+  const session = new LLMSession(apiSetup, configManager, (message: string) => {
+    tui.displayNotification(message, 5000);
+  });
 
   const tui = new Tui(configManager, {
     onPromptSend: async (prompt: string) => {
