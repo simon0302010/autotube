@@ -7,16 +7,19 @@ interface AgentFunctionCallOptions {
   functionArguments: Record<string, unknown>;
   callId?: string;
   textColor?: ColorRgb;
+  failed?: boolean; // If the model made an invalid function call
 }
 
 export class AgentFunctionCall {
   private _renderable: TextRenderable;
 
   constructor(renderer: CliRenderer, options: AgentFunctionCallOptions) {
-    const [text, color] = this.formatFunctionCall(
+    const text = this.formatFunctionCall(
       options.functionName,
       options.functionArguments,
     );
+
+    const color = (options.failed ?? false) ? "#de1d1d" : "#7b7b7b";
 
     this._renderable = new TextRenderable(renderer, {
       id: options.id,
@@ -29,15 +32,12 @@ export class AgentFunctionCall {
     });
   }
 
-  formatFunctionCall(
-    name: string,
-    args: Record<string, unknown>,
-  ): [string, string] {
+  formatFunctionCall(name: string, args: Record<string, unknown>): string {
     const topLevelValues = [];
     for (const key of Object.keys(args)) {
       topLevelValues.push(`${key} = ${JSON.stringify(args[key])}`);
     }
-    return [`${name}(${topLevelValues.join(", ")})`, "#7b7b7b"];
+    return `${name}(${topLevelValues.join(", ")})`;
   }
 
   get renderable(): Renderable {

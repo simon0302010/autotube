@@ -175,7 +175,7 @@ export class Tui {
     agentThought.finishStream();
   }
 
-  async addFunctionCall(call: PromisedFunctionCall) {
+  async addFunctionCall(call: PromisedFunctionCall, invalid: boolean) {
     const lastMessage = this.messages.at(-1);
     // Pack function calls together
     if (lastMessage instanceof AgentFunctionCall) lastMessage.marginBottom = 0;
@@ -184,6 +184,7 @@ export class Tui {
       functionName: call.originalCall.name,
       functionArguments: await call.promise,
       callId: call.originalCall.id ?? "Unknown call ID",
+      failed: invalid,
     });
 
     // Keeps track of messages

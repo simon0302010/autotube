@@ -66,7 +66,7 @@ async function main() {
         if (item.type === "message" && "stream" in item) {
           tui.addAgentMessage(item); // TODO: expand upon "Refusal"
         } else if (item.type === "function_call" && "promise" in item) {
-          tui.addFunctionCall(item);
+          tui.addFunctionCall(item, false);
         } else if (item.type === "reasoning" && "stream" in item) {
           tui.addAgentThought(item);
         }
