@@ -17,7 +17,6 @@ import type {
   StreamableReasoning,
 } from "../agent/llm";
 import { AgentFunctionCall } from "./messages/agentFunctionCall";
-import type { ResponseFunctionToolCall } from "openai/resources/responses/responses.mjs";
 import clipboard from "clipboardy";
 import { TuiNotification } from "./notification";
 
