@@ -31,7 +31,9 @@ export type StreamableReasoning = {
 export type PromisedFunctionCall = {
   type: "function_call";
   originalCall: ResponseFunctionToolCall;
-  promise: Promise<string>; /* Contains the arguments of the function call */
+  promise: Promise<
+    Record<string, unknown>
+  >; /** Contains the arguments of the function call */
 };
 
 export type StreamableItem =
