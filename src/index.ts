@@ -64,11 +64,7 @@ async function main() {
         if (item.type === "message" && "stream" in item) {
           tui.addAgentMessage(item); // TODO: expand upon "Refusal"
         } else if (item.type === "function_call" && "promise" in item) {
-          // TODO: Handle item.promise (either using await or .then())
-          item.promise.then((args) => {
-            tui.displayNotification(JSON.stringify(args), 5000); // Remove this once you properly implement displaying call args
-          });
-          tui.addFunctionCall(item.originalCall);
+          tui.addFunctionCall(item);
         } else if (item.type === "reasoning" && "stream" in item) {
           tui.addAgentThought(item);
         }

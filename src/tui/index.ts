@@ -11,7 +11,11 @@ import { UserMessage } from "./messages/userMessage";
 import { DEFAULT_USE_24_HOUR_TIME, type ConfigManager } from "../config";
 import { AgentMessage } from "./messages/agentMessage";
 import { AgentThought } from "./messages/agentThought";
-import type { StreamableMessage, StreamableReasoning } from "../agent/llm";
+import type {
+  PromisedFunctionCall,
+  StreamableMessage,
+  StreamableReasoning,
+} from "../agent/llm";
 import { AgentFunctionCall } from "./messages/agentFunctionCall";
 import type { ResponseFunctionToolCall } from "openai/resources/responses/responses.mjs";
 import clipboard from "clipboardy";
@@ -172,15 +176,15 @@ export class Tui {
     agentThought.finishStream();
   }
 
-  async addFunctionCall(call: ResponseFunctionToolCall) {
+  async addFunctionCall(call: PromisedFunctionCall) {
     const lastMessage = this.messages.at(-1);
     // Pack function calls together
     if (lastMessage instanceof AgentFunctionCall) lastMessage.marginBottom = 0;
 
     const agentFunctionCall = new AgentFunctionCall(this.renderer, {
-      functionName: call.name,
-      functionArguments: call.arguments,
-      callId: call.id ?? "Unknown call ID",
+      functionName: call.originalCall.name,
+      functionArguments: await call.promise,
+      callId: call.originalCall.id ?? "Unknown call ID",
     });
 
     // Keeps track of messages

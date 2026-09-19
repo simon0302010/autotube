@@ -4,8 +4,8 @@ import { type ColorRgb } from "../../utils";
 interface AgentFunctionCallOptions {
   id?: string;
   functionName: string;
-  functionArguments: string;
-  callId: string;
+  functionArguments: Record<string, unknown>;
+  callId?: string;
   textColor?: ColorRgb;
 }
 
@@ -29,17 +29,13 @@ export class AgentFunctionCall {
     });
   }
 
-  formatFunctionCall(name: string, args: string): [string, string] {
-    let parsed: Record<string, unknown>;
-    try {
-      parsed = JSON.parse(args);
-    } catch {
-      return [name, "#de1d1d"];
-    }
-
+  formatFunctionCall(
+    name: string,
+    args: Record<string, unknown>,
+  ): [string, string] {
     const topLevelValues = [];
-    for (const key of Object.keys(parsed)) {
-      topLevelValues.push(`${key} = ${JSON.stringify(parsed[key])}`);
+    for (const key of Object.keys(args)) {
+      topLevelValues.push(`${key} = ${JSON.stringify(args[key])}`);
     }
     return [`${name}(${topLevelValues.join(", ")})`, "#7b7b7b"];
   }
