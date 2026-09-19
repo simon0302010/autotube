@@ -90,7 +90,8 @@ export class LLMSession {
     const itemQueue = new AsyncQueue<StreamableItem>();
     let currentTextQueue: AsyncQueue<string> | null = null;
     let currentReasoningQueue: AsyncQueue<string> | null = null;
-    let resolveCurrentFunctionCall: ((value: string) => void) | null = null;
+    let resolveCurrentFunctionCall:
+      ((value: Record<string, unknown>) => void) | null = null;
 
     // When an output item begins, create its delta queue and yield the item to the outer stream
     responseStream.on("response.output_item.added", (event) => {
@@ -110,7 +111,7 @@ export class LLMSession {
         itemQueue.push({
           type: "function_call",
           originalCall: event.item,
-          promise: new Promise<string>((resolve) => {
+          promise: new Promise<Record<string, unknown>>((resolve) => {
             resolveCurrentFunctionCall = resolve;
           }),
         });
