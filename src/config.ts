@@ -56,6 +56,36 @@ export interface AutotubeConfig {
   @remarks
   Only relevant if `autoRetry` is true. Set to -1 for unlimited retries (not recommended). */
 
+  compaction?: boolean; /* Whether to compact the history
+
+  @defaultValue false
+  */
+
+  compactionMaxTokens?: number; /* If history tokens exceed this value, compact the history
+
+  @defaultValue 8192
+  @remarks
+  Only relevant if `compaction` is true. When set to 0, the history will not be compacted.
+  When set to a negative value, the history will not be compacted.
+  */
+
+  compactionStrategy?:
+    "summarize" | "truncate"; /* The strategy to use when compacting the history
+
+  @defaultValue "truncate"
+  @remarks
+  Only relevant if `compaction` is true. 
+  "truncate": Truncates the history to fit within the context window
+  "summarize": Summarizes the history to fit within the context window (uses AI)
+  */
+
+  compactionTargetRatio?: number; /* The ratio of the history to keep after compaction
+
+  @defaultValue 0.5
+  @remarks
+  Only relevant if `compaction` is true.
+  */
+
   use24HourTime?: boolean; /* Whether to use the 24-hour time format in the TUI
 
   @remarks
@@ -70,6 +100,10 @@ export const defaultConfig: AutotubeConfig = {
   autoRetryDelayMs: 1000,
   autoRetryDelayIncreaseFactor: 2,
   autoRetryMaxRetries: 10,
+  compaction: false,
+  compactionMaxTokens: 8192,
+  compactionStrategy: "truncate",
+  compactionTargetRatio: 0.5,
 };
 
 // TODO: Integrate prompts with dedicated TUI
@@ -337,6 +371,13 @@ export class ConfigManager {
             delayMs: this._config.autoRetryDelayMs!,
             delayIncreaseFactor: this._config.autoRetryDelayIncreaseFactor!,
             maxRetries: this._config.autoRetryMaxRetries!,
+          }
+        : undefined,
+      compaction: this._config.autoRetry
+        ? {
+            maxTokens: this._config.compactionMaxTokens!,
+            strategy: this._config.compactionStrategy!,
+            targetRatio: this._config.compactionTargetRatio!,
           }
         : undefined,
     };

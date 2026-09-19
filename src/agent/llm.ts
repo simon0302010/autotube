@@ -12,6 +12,7 @@ import type { ReadFileImageResult } from "./tools/readFile";
 import "./tools";
 import { AsyncQueue } from "../utils";
 import { isRetryableError } from "./retry";
+import { compact } from "./compaction";
 
 export interface ApiSetup {
   apiKey: string;
@@ -21,6 +22,11 @@ export interface ApiSetup {
     delayMs: number;
     delayIncreaseFactor: number;
     maxRetries: number;
+  };
+  compaction?: {
+    maxTokens: number;
+    strategy: "summarize" | "truncate";
+    targetRatio: number; // How much of maxTokens we should achieve to stop compacting
   };
 }
 
@@ -50,12 +56,15 @@ export type StreamableItem =
   | PromisedFunctionCall
   | ResponseOutputItem;
 
+const MAX_COMPACTION_ATTEMPTS = 3;
+
 export class LLMSession {
   private apiSetup: ApiSetup;
   private configManager: ConfigManager;
   private history: ResponseInput;
   private client: OpenAI;
   private onNotify?: (message: string) => void;
+  private historyTokens?: number;
 
   constructor(
     apiSetup: ApiSetup,
@@ -77,6 +86,35 @@ export class LLMSession {
   }
 
   async *call(retryNumber: number = 0): AsyncGenerator<StreamableItem> {
+    if (
+      this.apiSetup.compaction &&
+      this.historyTokens &&
+      this.apiSetup.compaction.maxTokens < this.historyTokens
+    ) {
+      if (this.onNotify) this.onNotify("Compacting history...");
+      let attempts = 0;
+      let compacted = {
+        history: this.history,
+        tokens: this.historyTokens,
+      };
+      while (
+        compacted.tokens >
+          this.apiSetup.compaction.maxTokens *
+            this.apiSetup.compaction.targetRatio &&
+        attempts < MAX_COMPACTION_ATTEMPTS
+      ) {
+        compacted = await compact(
+          this.history,
+          this.historyTokens,
+          this.apiSetup.compaction.strategy,
+        );
+        attempts += 1;
+      }
+
+      this.history = compacted.history;
+      this.historyTokens = compacted.tokens;
+    }
+
     let responseStream;
     try {
       responseStream = await this.client.responses.stream({
@@ -163,6 +201,8 @@ export class LLMSession {
       yield* itemQueue;
 
       const response = await finalResponsePromise;
+
+      this.historyTokens = response.usage?.total_tokens;
 
       let recallNecessary = false;
 
