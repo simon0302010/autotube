@@ -1,5 +1,6 @@
 import OpenAI, { APIError } from "openai";
 import type {
+  ResponseFunctionToolCall,
   ResponseInput,
   ResponseInputItem,
   ResponseOutputItem,
@@ -26,8 +27,18 @@ export type StreamableReasoning = {
   stream: AsyncIterable<string>;
 };
 
+// TODO: This name is kinda silly
+export type PromisedFunctionCall = {
+  type: "function_call";
+  originalCall: ResponseFunctionToolCall;
+  promise: Promise<string>; /* Contains the arguments of the function call */
+};
+
 export type StreamableItem =
-  StreamableMessage | StreamableReasoning | ResponseOutputItem;
+  | StreamableMessage
+  | StreamableReasoning
+  | PromisedFunctionCall
+  | ResponseOutputItem;
 
 export class LLMSession {
   apiSetup: ApiSetup;
@@ -77,6 +88,7 @@ export class LLMSession {
     const itemQueue = new AsyncQueue<StreamableItem>();
     let currentTextQueue: AsyncQueue<string> | null = null;
     let currentReasoningQueue: AsyncQueue<string> | null = null;
+    let resolveCurrentFunctionCall: ((value: string) => void) | null = null;
 
     // When an output item begins, create its delta queue and yield the item to the outer stream
     responseStream.on("response.output_item.added", (event) => {
@@ -92,8 +104,16 @@ export class LLMSession {
           type: "reasoning",
           stream: currentReasoningQueue,
         });
+      } else if (event.item.type === "function_call") {
+        itemQueue.push({
+          type: "function_call",
+          originalCall: event.item,
+          promise: new Promise<string>((resolve) => {
+            resolveCurrentFunctionCall = resolve;
+          }),
+        });
       } else {
-        // e.g. function_call or other items
+        // Other items
         itemQueue.push(event.item);
       }
     });
@@ -118,6 +138,9 @@ export class LLMSession {
       } else if (event.item.type === "reasoning") {
         currentReasoningQueue?.done();
         currentReasoningQueue = null;
+      } else if (event.item.type === "function_call") {
+        resolveCurrentFunctionCall?.(JSON.parse(event.item.arguments));
+        resolveCurrentFunctionCall = null;
       }
     });
 
