@@ -2,7 +2,7 @@
 
 import { ConfigManager } from "./config";
 import { LLMSession } from "./agent/llm";
-import { Tui } from "./tui";
+import { AgentStatus, Tui } from "./tui";
 import { TOML } from "bun";
 import envPaths, { type Paths } from "env-paths";
 import path from "node:path";
@@ -54,12 +54,14 @@ async function main() {
 
   const tui = new Tui(configManager, {
     onPromptSend: async (prompt: string) => {
+      tui.status = AgentStatus.Working;
+
       session.addMessage({
         role: "user",
         content: prompt,
       });
 
-      const output = await session.call();
+      const output = session.call();
 
       // TODO: Allow different formats for output (within `addAgentMessage`)
       for await (const item of output) {
@@ -71,7 +73,10 @@ async function main() {
           tui.addAgentThought(item);
         }
       }
+
+      tui.status = AgentStatus.Idle;
     },
+    modelName: apiSetup.model,
   });
 
   tui.buildAndRun();

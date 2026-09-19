@@ -27,4 +27,9 @@ export const defaultProviders: Providers = {
     type: "openai",
     apiKeyVar: "GROQ_API_KEY",
   },
+  NVIDIA: {
+    baseUrl: "https://integrate.api.nvidia.com/v1",
+    type: "openai",
+    apiKeyVar: "NVIDIA_API_KEY",
+  },
 };

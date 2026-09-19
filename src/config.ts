@@ -205,7 +205,9 @@ export class ConfigManager {
           const matchingModels = this.models!.data.filter((model) => {
             return (
               model.id.toLowerCase().includes(input.toLowerCase().trim()) ||
-              model.name.toLowerCase().includes(input.toLowerCase().trim())
+              (model.name ?? model.id)
+                .toLowerCase()
+                .includes(input.toLowerCase().trim())
             );
           });
 

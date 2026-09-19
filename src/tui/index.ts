@@ -5,6 +5,7 @@ import {
   InputRenderable,
   InputRenderableEvents,
   ScrollBoxRenderable,
+  TextRenderable,
 } from "@opentui/core";
 import { TuiButton } from "./button";
 import { UserMessage } from "./messages/userMessage";
@@ -20,8 +21,17 @@ import { AgentFunctionCall } from "./messages/agentFunctionCall";
 import clipboard from "clipboardy";
 import { TuiNotification } from "./notification";
 
+// TODO: Improve this
+export enum AgentStatus {
+  Idle = "Idle",
+  Working = "Working",
+  ErrorRetrying = "The agent encountered an error, retrying",
+  Failed = "Failed",
+}
+
 interface TuiOptions {
   onPromptSend?: (prompt: string) => void;
+  modelName?: string;
 }
 
 export class Tui {
@@ -32,6 +42,10 @@ export class Tui {
     UserMessage | AgentMessage | AgentThought | AgentFunctionCall
   )[];
 
+  private _status: AgentStatus;
+  private statusText!: TextRenderable;
+  private modelName?: string;
+
   private configManager: ConfigManager;
   private onPromptSend?: (prompt: string) => void;
 
@@ -39,6 +53,8 @@ export class Tui {
     this.onPromptSend = options.onPromptSend;
     this.configManager = configManager;
     this.messages = [];
+    this._status = AgentStatus.Idle;
+    this.modelName = options.modelName;
   }
 
   async buildAndRun() {
@@ -93,9 +109,19 @@ export class Tui {
       onClick: async () => this.handleSend().catch(console.error),
     });
 
+    this.statusText = new TextRenderable(this.renderer, {
+      content: this.formatStatus(),
+      width: "100%",
+      height: 1,
+      fg: "#7a7a7a",
+      marginLeft: 5,
+      marginBottom: 1,
+    });
+
     promptBar.add(this.promptInput);
     promptBar.add(promptSend.renderable);
     box.add(this.messageArea);
+    box.add(this.statusText);
     box.add(promptBar);
     this.renderer.root.add(box);
 
@@ -116,11 +142,20 @@ export class Tui {
   // This retrieves the prompt and does all the magic
   private async handleSend() {
     const prompt = this.promptInput.value.trim();
-    this.promptInput.clearSelection();
-    this.promptInput.clear();
 
     if (!prompt && prompt === "") return;
     if (prompt == ":q") this.renderer.destroy();
+
+    if (
+      this.status === AgentStatus.Working ||
+      this.status === AgentStatus.ErrorRetrying
+    ) {
+      this.displayNotification("The agent is still working", 3000);
+      return;
+    }
+
+    this.promptInput.clearSelection();
+    this.promptInput.clear();
 
     this.addUserMessage(prompt);
 
@@ -197,5 +232,29 @@ export class Tui {
   async displayNotification(content: string, duration: number) {
     const notif = new TuiNotification(this.renderer, { content });
     await notif.display(duration);
+  }
+
+  set status(value: AgentStatus) {
+    this._status = value;
+    this.statusText.content = this.formatStatus();
+    if (
+      this._status === AgentStatus.Working ||
+      this._status === AgentStatus.ErrorRetrying
+    ) {
+      this.promptInput.focusable = false;
+      this.promptInput.blur();
+    } else {
+      this.promptInput.focusable = true;
+      this.promptInput.focus();
+    }
+  }
+
+  get status(): AgentStatus {
+    return this._status;
+  }
+
+  private formatStatus(): string {
+    if (this.modelName) return `${this.status} – ${this.modelName}`;
+    else return this.status;
   }
 }
