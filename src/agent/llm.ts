@@ -51,11 +51,11 @@ export type StreamableItem =
   | ResponseOutputItem;
 
 export class LLMSession {
-  apiSetup: ApiSetup;
-  configManager: ConfigManager;
-  history: ResponseInput;
-  client: OpenAI;
-  onNotify?: (message: string) => void;
+  private apiSetup: ApiSetup;
+  private configManager: ConfigManager;
+  private history: ResponseInput;
+  private client: OpenAI;
+  private onNotify?: (message: string) => void;
 
   constructor(
     apiSetup: ApiSetup,
