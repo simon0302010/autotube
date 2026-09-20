@@ -13,5 +13,6 @@
 
 export { wikipediaSearchTool } from "./wikipediaSearch";
 export { wikipediaArticleTool } from "./wikipediaArticle";
+export { downloadWikipediaImageTool } from "./wikipediaImage";
 export { webSearchTool } from "./webSearch";
 export { readFileTool } from "./readFile";

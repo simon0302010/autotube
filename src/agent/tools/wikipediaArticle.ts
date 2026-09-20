@@ -7,14 +7,12 @@ import { mkdir } from "node:fs/promises";
 interface ArticleParams {
   title: string;
   summary?: boolean | null;
+  includeImages?: boolean | null;
 }
 
 interface ArticleImage {
   title: string;
-  url: string;
-  width: number;
-  height: number;
-  localPath: string;
+  description?: string;
 }
 
 interface ArticleResult {
@@ -38,7 +36,13 @@ interface ImageInfoResponse {
   query: {
     pages: Record<
       string,
-      { imageinfo?: { url: string; width: number; height: number }[] }
+      {
+        imageinfo?: {
+          extmetadata?: {
+            ImageDescription?: { value?: string };
+          };
+        }[];
+      }
     >;
   };
 }
@@ -63,7 +67,7 @@ export const wikipediaArticleTool: ToolMetadata<ArticleParams, ArticleResult> =
       type: "function",
       name: "fetchWikipediaArticle",
       description:
-        "Fetch a Wikipedia article's complete text and all image links via page title.",
+        "Fetch a Wikipedia article's complete text and image information via page title.",
       parameters: {
         type: "object",
         properties: {
@@ -89,6 +93,7 @@ export const wikipediaArticleTool: ToolMetadata<ArticleParams, ArticleResult> =
     ): Promise<ToolResult<ArticleResult>> => {
       const { title } = payload;
       const summary = payload.summary ?? false;
+      const includeImages = payload.includeImages ?? true;
 
       let extract: string;
 
@@ -145,25 +150,25 @@ export const wikipediaArticleTool: ToolMetadata<ArticleParams, ArticleResult> =
         format: "json",
         origin: "*",
       });
+
       const imageUrl = `https://en.wikipedia.org/w/api.php?${imageParams}`;
 
       const imageResponse = await fetch(imageUrl);
       const imageData = (await imageResponse.json()) as ImagesResponse;
 
       const images: ArticleImage[] = [];
-      await mkdir(ENV_PATHS.temp, { recursive: true });
 
-      if (imageData.query) {
+      if (includeImages && imageData.query) {
         const pages = Object.values(imageData.query.pages);
         // What the fuck, TypeScript?
-        const pageImages = pages[0]?.images?.slice(0, 20) ?? [];
+        const pageImages = pages[0]?.images?.slice(0, 30) ?? [];
 
         for (const image of pageImages) {
           const infoParams = new URLSearchParams({
             action: "query",
             titles: image.title,
             prop: "imageinfo",
-            iiprop: "url|size",
+            iiprop: "extmetadata",
             format: "json",
             origin: "*",
           });
@@ -185,54 +190,11 @@ export const wikipediaArticleTool: ToolMetadata<ArticleParams, ArticleResult> =
           const infoData = (await infoResponse.json()) as ImageInfoResponse;
 
           const infoPages = Object.values(infoData.query.pages);
-          const info = infoPages[0]?.imageinfo?.[0];
+          const info =
+            infoPages[0]?.imageinfo?.[0]?.extmetadata?.ImageDescription
+              ?.value ?? "";
 
-          if (info) {
-            const extension =
-              path.extname(new URL(info.url).pathname) || ".png";
-            const sanitizedName = image.title
-              .replace(/^File:/i, "")
-              .replace(/[^\w.-]/g, "_")
-              .replace(/_+/g, "_");
-
-            const filename = `${sanitizedName}_${Date.now()}${extension}`;
-            const localPath = path.join(ENV_PATHS.temp, filename);
-
-            try {
-              const imgReponse = await fetch(info.url, {
-                headers: {
-                  "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
-                },
-              });
-
-              if (imgReponse.ok) {
-                const blob = await imgReponse.blob();
-                await Bun.write(localPath, blob);
-              } else {
-                return {
-                  success: false,
-                  error: `Wikipedia Image API error: ${imgReponse.status} ${imgReponse.statusText}`,
-                };
-              }
-            } catch {
-              images.push({
-                title: image.title,
-                url: info.url,
-                width: info.width,
-                height: info.height,
-                localPath: "",
-              });
-              continue;
-            }
-
-            images.push({
-              title: image.title,
-              url: info.url,
-              width: info.width,
-              height: info.height,
-              localPath,
-            });
-          }
+          images.push({ title: image.title, description: info });
         }
       }
 
