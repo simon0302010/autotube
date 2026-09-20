@@ -251,6 +251,11 @@ export class LLMSession {
               await this.configManager.getProviderApiKey("Hack Club AI");
           }
 
+          if (step.name === "webFetch") {
+            args.apiKey =
+              await this.configManager.getProviderApiKey("Hack Club AI");
+          }
+
           const result = await tool.execute(args);
 
           if (
