@@ -215,7 +215,7 @@ export class LLMSession {
               output: [
                 {
                   type: "input_image",
-                  image_url: result.data.data,
+                  image_url: (result.data as ReadFileImageResult).data,
                 },
               ],
             });
