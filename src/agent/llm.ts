@@ -8,6 +8,7 @@ import type {
 } from "openai/resources/responses/responses.mjs";
 import type { ConfigManager } from "../config";
 import { toolRegistry } from "./tools/toolRegistry";
+import type { ReadFileImageResult } from "./tools/readFile";
 import "./tools";
 import { AsyncQueue } from "../utils";
 import { isRetryableError } from "./retry";
@@ -34,6 +35,7 @@ export type StreamableReasoning = {
 };
 
 // TODO: This name is kinda silly
+// kaboom: This was promised to us 7000 years ago
 export type PromisedFunctionCall = {
   type: "function_call";
   originalCall: ResponseFunctionToolCall;
@@ -200,11 +202,30 @@ export class LLMSession {
 
           const result = await tool.execute(args);
 
-          this.history.push({
-            type: "function_call_output",
-            call_id: step.call_id,
-            output: JSON.stringify(result),
-          });
+          if (
+            result.success &&
+            result.data &&
+            typeof result.data === "object" &&
+            "isImage" in result.data &&
+            (result.data as ReadFileImageResult).isImage === true
+          ) {
+            this.history.push({
+              type: "function_call_output",
+              call_id: step.call_id,
+              output: [
+                {
+                  type: "input_image",
+                  image_url: result.data.data,
+                },
+              ],
+            });
+          } else {
+            this.history.push({
+              type: "function_call_output",
+              call_id: step.call_id,
+              output: JSON.stringify(result),
+            });
+          }
         }
       }
 

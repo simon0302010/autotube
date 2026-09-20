@@ -7,7 +7,7 @@ interface ReadFileParams {
   path: string;
 }
 
-interface ReadFileImageResult {
+export interface ReadFileImageResult {
   isImage: true;
   data: string;
 }
