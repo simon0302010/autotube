@@ -21,6 +21,7 @@ import { AgentFunctionCall } from "./messages/agentFunctionCall";
 import clipboard from "clipboardy";
 import { TuiNotification } from "./notification";
 import type { ModelInfo } from "../agent/models";
+import { COMMAND_LIST, runCommand } from "./commands";
 
 // TODO: Improve this
 export enum AgentStatus {
@@ -51,7 +52,7 @@ export class Tui {
 
   private configManager: ConfigManager;
   private onPromptSend?: (prompt: string) => void;
-  private getTokens?: () => number;
+  getTokens?: () => number;
 
   constructor(configManager: ConfigManager, options: TuiOptions) {
     this.onPromptSend = options.onPromptSend;
@@ -144,20 +145,24 @@ export class Tui {
     this.promptInput.focus();
   }
 
+  destroy() {
+    this.renderer.destroy();
+  }
+
   // This retrieves the prompt and does all the magic
   private async handleSend() {
     const prompt = this.promptInput.value.trim();
 
     if (!prompt && prompt === "") return;
-    if (prompt == ":q") this.renderer.destroy();
 
-    // TODO: Create a better way to handle commands (or remove this) (note: this does not clear them message box after using)
-    if (prompt == ":tokens") {
-      if (!this.getTokens) {
-        this.displayNotification("No token information available", 3000);
-        return;
+    if (prompt.startsWith(":")) {
+      const [command, _input] = prompt.split(" ", 1);
+      if (runCommand(COMMAND_LIST, command!.substring(1), _input ?? "", this)) {
+        this.promptInput.clearSelection();
+        this.promptInput.clear();
+      } else {
+        this.displayNotification("Unknown command", 3000);
       }
-      this.displayNotification(`${this.getTokens()} tokens used`, 3000);
       return;
     }
 
