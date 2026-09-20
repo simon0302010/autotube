@@ -328,8 +328,6 @@ export class LLMSession {
           yield* this.call(retryNumber + 1);
           return;
         }
-      } else {
-        console.log("NO AUTO RETRY");
       }
       throw e;
     }
