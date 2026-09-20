@@ -33,6 +33,7 @@ export enum AgentStatus {
 interface TuiOptions {
   onPromptSend?: (prompt: string) => void;
   modelName?: string;
+  getTokens?: () => number;
 }
 
 export class Tui {
@@ -49,6 +50,7 @@ export class Tui {
 
   private configManager: ConfigManager;
   private onPromptSend?: (prompt: string) => void;
+  private getTokens?: () => number;
 
   constructor(configManager: ConfigManager, options: TuiOptions) {
     this.onPromptSend = options.onPromptSend;
@@ -56,6 +58,7 @@ export class Tui {
     this.messages = [];
     this._status = AgentStatus.Idle;
     this.modelName = options.modelName;
+    this.getTokens = options.getTokens;
   }
 
   async buildAndRun() {
@@ -146,6 +149,16 @@ export class Tui {
 
     if (!prompt && prompt === "") return;
     if (prompt == ":q") this.renderer.destroy();
+
+    // TODO: Create a better way to handle commands (or remove this) (note: this does not clear them message box after using)
+    if (prompt == ":tokens") {
+      if (!this.getTokens) {
+        this.displayNotification("No token information available", 3000);
+        return;
+      }
+      this.displayNotification(`${this.getTokens()} tokens used`, 3000);
+      return;
+    }
 
     if (
       this.status === AgentStatus.Working ||

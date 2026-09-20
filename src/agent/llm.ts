@@ -56,7 +56,7 @@ export type StreamableItem =
   | PromisedFunctionCall
   | ResponseOutputItem;
 
-const MAX_COMPACTION_ATTEMPTS = 3;
+const MAX_COMPACTION_ATTEMPTS = 8; // TODO: make this configurable
 
 export class LLMSession {
   private apiSetup: ApiSetup;
@@ -81,6 +81,10 @@ export class LLMSession {
     this.onNotify = onNotify;
   }
 
+  get tokens() {
+    return this.historyTokens ?? 0;
+  }
+
   addMessage(message: ResponseInputItem) {
     this.history.push(message);
   }
@@ -91,7 +95,9 @@ export class LLMSession {
       this.historyTokens &&
       this.apiSetup.compaction.maxTokens < this.historyTokens
     ) {
-      if (this.onNotify) this.onNotify("Compacting history...");
+      if (this.onNotify)
+        this.onNotify(`Compacting history... (${this.historyTokens} tokens)`);
+      const previousTokens = this.historyTokens;
       let attempts = 0;
       let compacted = {
         history: this.history,
@@ -113,6 +119,10 @@ export class LLMSession {
 
       this.history = compacted.history;
       this.historyTokens = compacted.tokens;
+      if (this.onNotify)
+        this.onNotify(
+          `Compacted history after ${attempts} attempts. (${previousTokens - this.historyTokens} tokens saved / ${Math.round((1 - compacted.tokens / previousTokens) * 100)}% reduction)`,
+        );
     }
 
     let responseStream;

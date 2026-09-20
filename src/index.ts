@@ -77,6 +77,9 @@ async function main() {
       tui.status = AgentStatus.Idle;
     },
     modelName: apiSetup.model,
+    getTokens: () => {
+      return session.tokens;
+    },
   });
 
   tui.buildAndRun();
