@@ -259,6 +259,6 @@ export class Tui {
   }
 
   private formatStatus(): string {
-    return `${this.status}${this.model ? ` – ${this.model.name ?? this.model.id}` : ""}${this.model && this.model.context_length ? ` – ${this.model.context_length} tokens context` : ""}`;
+    return `${this.status}${this.model ? ` – ${this.model.name ?? this.model.id}` : ""}${this.model && this.model.context_length && this.getTokens ? ` – ${this.getTokens()}/${this.model.context_length} tokens used` : ""}`;
   }
 }
