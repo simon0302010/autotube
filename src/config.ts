@@ -10,59 +10,59 @@ import type { CompactionStrategy } from "./agent/compaction";
 export const DEFAULT_USE_24_HOUR_TIME: boolean = true;
 
 export interface AutotubeConfig {
-  providers?: Providers; /* @defaultValue {@link ./agent/providers#defaultProviders} */
-  provider?: string; /* The provider to use
+  providers?: Providers; /** @defaultValue {@link ./agent/providers#defaultProviders} */
+  provider?: string; /** The provider to use
 
   @remarks
   Required in headless environments.
   If not specified, users will be prompted to select a provider. */
 
-  apiKey?: string; /* The API key to use
+  apiKey?: string; /** The API key to use
 
   @remarks
   Required in headless environments.
   If not specified, users will be prompted to enter an API key. */
 
-  model?: string; /* The model to use
+  model?: string; /** The model to use
 
   @remarks
   Required in headless environments.
   If not specified, users will be prompted to select a model. */
 
-  checkModels?: boolean; /* Whether to fetch the models list and, if specified, validate `model`
+  checkModels?: boolean; /** Whether to fetch the models list and, if specified, validate `model`
 
   @defaultValue true
   @remarks
   If `model` is not found in the list, an error will be thrown. */
 
-  autoRetry?: boolean; /* Automatically retry if an API error occurs
+  autoRetry?: boolean; /** Automatically retry if an API error occurs
 
   @defaultValue true */
 
-  autoRetryDelayMs?: number; /* Delay between retries in milliseconds
+  autoRetryDelayMs?: number; /** Delay between retries in milliseconds
 
   @defaultValue 1000
   @remarks
   Only relevant if `autoRetry` is true. When set to 0, there will be no delay between retries. */
 
-  autoRetryDelayIncreaseFactor?: number; /* Factor by which the delay increases each retry
+  autoRetryDelayIncreaseFactor?: number; /** Factor by which the delay increases each retry
 
   @defaultValue 2
   @remarks
   Only relevant if `autoRetry` is true. If less than or equal to 1, the delay will not increase. */
 
-  autoRetryMaxRetries?: number; /* Maximum number of retries
+  autoRetryMaxRetries?: number; /** Maximum number of retries
 
   @defaultValue 10
   @remarks
   Only relevant if `autoRetry` is true. Set to -1 for unlimited retries (not recommended). */
 
-  compaction?: boolean; /* Whether to compact the history
+  compaction?: boolean; /** Whether to compact the history
 
   @defaultValue false
   */
 
-  compactionMaxTokens?: number; /* If history tokens exceed this value, compact the history
+  compactionMaxTokens?: number; /** If history tokens exceed this value, compact the history
 
   @defaultValue 65536
   @remarks
@@ -70,7 +70,7 @@ export interface AutotubeConfig {
   When set to a negative value, the history will not be compacted.
   */
 
-  compactionStrategy?: CompactionStrategy; /* The strategy to use when compacting the history
+  compactionStrategy?: CompactionStrategy; /** The strategy to use when compacting the history
 
   @defaultValue "truncate"
   @remarks
@@ -79,14 +79,14 @@ export interface AutotubeConfig {
   "summarize": Summarizes the history to fit within the context window (uses AI)
   */
 
-  compactionTargetRatio?: number; /* The ratio of the history to keep after compaction
+  compactionTargetRatio?: number; /** The ratio of the history to keep after compaction
 
   @defaultValue 0.5
   @remarks
   Only relevant if `compaction` is true.
   */
 
-  use24HourTime?: boolean; /* Whether to use the 24-hour time format in the TUI
+  use24HourTime?: boolean; /** Whether to use the 24-hour time format in the TUI
 
   @remarks
   If not specified, users will be prompted to choose between the 2 major time formats.
@@ -273,7 +273,7 @@ export class ConfigManager {
     this._config.use24HourTime = use24HourTime;
   }
 
-  /* Assumes `checkModels` is true */
+  /** Assumes `checkModels` is true */
   private async validateModel(): Promise<void> {
     if (!this.config.model) {
       throw new Error("No model specified");
@@ -307,7 +307,7 @@ export class ConfigManager {
       this.saveConfig(path);
   }
 
-  /* Checks each config item that is unset and prompts for user input. */
+  /** Checks each config item that is unset and prompts for user input. */
   async validateHeaded(): Promise<void> {
     if (!this.config.provider) {
       await this.setupProvider();
