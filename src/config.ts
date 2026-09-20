@@ -64,14 +64,13 @@ export interface AutotubeConfig {
 
   compactionMaxTokens?: number; /* If history tokens exceed this value, compact the history
 
-  @defaultValue 8192
+  @defaultValue 65536
   @remarks
   Only relevant if `compaction` is true. When set to 0, the history will not be compacted.
   When set to a negative value, the history will not be compacted.
   */
 
-  compactionStrategy?:
-    CompactionStrategy; /* The strategy to use when compacting the history
+  compactionStrategy?: CompactionStrategy; /* The strategy to use when compacting the history
 
   @defaultValue "truncate"
   @remarks
@@ -94,15 +93,15 @@ export interface AutotubeConfig {
   Defaults to `DEFAULT_USE_24_HOUR_TIME` in headless mode. */
 }
 
-export const defaultConfig: AutotubeConfig = {
+export const DEFAULT_CONFIG: AutotubeConfig = {
   providers: defaultProviders,
   checkModels: true,
   autoRetry: true,
   autoRetryDelayMs: 1000,
   autoRetryDelayIncreaseFactor: 2,
   autoRetryMaxRetries: 10,
+  compactionMaxTokens: 65536,
   compaction: true,
-  compactionMaxTokens: 8192,
   compactionStrategy: "truncate",
   compactionTargetRatio: 0.5,
 };
@@ -116,7 +115,8 @@ export class ConfigManager {
   constructor(config?: AutotubeConfig, isHeadless?: boolean) {
     this.isHeadless = isHeadless ?? false;
     this._config = {
-      ...defaultConfig,
+      providers: DEFAULT_CONFIG.providers,
+      checkModels: DEFAULT_CONFIG.checkModels,
       ...config,
     };
   }
@@ -360,8 +360,17 @@ export class ConfigManager {
   async getApiSetup(): Promise<ApiSetup | undefined> {
     if (!this._config.provider || !this._config.apiKey) return undefined;
 
-    const baseUrl = this._config.providers![this._config.provider]?.baseUrl;
+    const provider = this._config.providers![this._config.provider];
+    const baseUrl = provider?.baseUrl;
     if (!baseUrl) return undefined;
+
+    // Gets the contextLength from the model list
+    const contextLength =
+      this._config.compactionMaxTokens ??
+      this.models?.data.find((model) => {
+        return model.id.trim() === this._config.model?.trim();
+      })?.context_length ??
+      65536;
 
     return {
       baseUrl,
@@ -369,16 +378,25 @@ export class ConfigManager {
       model: this._config.model,
       autoRetry: this._config.autoRetry
         ? {
-            delayMs: this._config.autoRetryDelayMs!,
-            delayIncreaseFactor: this._config.autoRetryDelayIncreaseFactor!,
-            maxRetries: this._config.autoRetryMaxRetries!,
+            delayMs:
+              this._config.autoRetryDelayMs ?? DEFAULT_CONFIG.autoRetryDelayMs!,
+            delayIncreaseFactor:
+              this._config.autoRetryDelayIncreaseFactor ??
+              DEFAULT_CONFIG.autoRetryDelayIncreaseFactor!,
+            maxRetries:
+              this._config.autoRetryMaxRetries ??
+              DEFAULT_CONFIG.autoRetryMaxRetries!,
           }
         : undefined,
       compaction: this._config.autoRetry
         ? {
-            maxTokens: this._config.compactionMaxTokens!,
-            strategy: this._config.compactionStrategy!,
-            targetRatio: this._config.compactionTargetRatio!,
+            maxTokens: contextLength,
+            strategy:
+              this._config.compactionStrategy ??
+              DEFAULT_CONFIG.compactionStrategy!,
+            targetRatio:
+              this._config.compactionTargetRatio ??
+              DEFAULT_CONFIG.compactionTargetRatio!,
           }
         : undefined,
     };
