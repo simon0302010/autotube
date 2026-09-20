@@ -1,13 +1,8 @@
-import type {
-  ResponseInput,
-  ResponseInputItem,
-} from "openai/resources/responses/responses.mjs";
+import type { ResponseInputItem } from "openai/resources/responses/responses.mjs";
 
-const PHI_INV = (Math.sqrt(5) - 1) / 2;
+export const IMAGE_CHAR_EQUIVALENT = 1200; /** Approximate token use of an image, converted to characters */
 
-const IMAGE_CHAR_EQUIVALENT = 1200; /** Approximate token use of an image, converted to characters */
-
-const MESSAGE_FRAMING_CHARS = 16; /** Approximate token use of message framing in the prompt, in characters */
+export const MESSAGE_FRAMING_CHARS = 16; /** Approximate token use of message framing in the prompt, in characters */
 
 export function getResponseItemCharWeight(item: ResponseInputItem): number {
   let chars = MESSAGE_FRAMING_CHARS;
@@ -78,44 +73,4 @@ export function calculateItemTokens(
   }
 
   return allocations.map((a) => a.tokens);
-}
-
-/**
- * Truncates the history to reduce tokens
- * @param history The existing history
- * @param tokens The current estimated token use
- * @returns The truncated history and estimated new token use
- * @remarks
- * Admittedly, I chose to use the golden ratio here for fun. I couldn't find any documented use of the golden ratio for token truncation online, but after consulting with an LLM, it will actually work quite well.
- */
-export function truncateHistory(
-  history: ResponseInput,
-  tokens: number,
-): {
-  history: ResponseInput;
-  tokens: number;
-} {
-  const targetNewTokens = Math.round(tokens * PHI_INV);
-  const removeCount = tokens - targetNewTokens;
-  const skipCount = targetNewTokens - removeCount;
-
-  const newHistory: ResponseInput = [];
-
-  const tokenAllocations = calculateItemTokens(history, tokens);
-
-  // Include at least skipCount tokens worth of input items
-  let newTokens = 0;
-  for (const [index, item] of history.entries()) {
-    if (newTokens < skipCount) {
-      newHistory.push(item);
-    } else if (newTokens > skipCount + removeCount) {
-      newHistory.push(item);
-    }
-    newTokens += tokenAllocations[index]!;
-  }
-
-  return {
-    history: newHistory,
-    tokens: targetNewTokens,
-  };
 }

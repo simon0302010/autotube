@@ -12,7 +12,7 @@ import type { ReadFileImageResult } from "./tools/readFile";
 import "./tools";
 import { AsyncQueue } from "../utils";
 import { isRetryableError } from "./retry";
-import { compact } from "./compaction";
+import { compact, type CompactionStrategy } from "./compaction";
 
 export interface ApiSetup {
   apiKey: string;
@@ -25,7 +25,7 @@ export interface ApiSetup {
   };
   compaction?: {
     maxTokens: number;
-    strategy: "summarize" | "truncate";
+    strategy: CompactionStrategy;
     targetRatio: number; // How much of maxTokens we should achieve to stop compacting
   };
 }
@@ -110,8 +110,8 @@ export class LLMSession {
         attempts < MAX_COMPACTION_ATTEMPTS
       ) {
         compacted = await compact(
-          this.history,
-          this.historyTokens,
+          compacted.history,
+          compacted.tokens,
           this.apiSetup.compaction.strategy,
         );
         attempts += 1;

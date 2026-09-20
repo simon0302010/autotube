@@ -5,6 +5,7 @@ import type { ModelList } from "./agent/models";
 import { defaultProviders, type Providers } from "./agent/providers";
 import { confirm, input, password, search, select } from "@inquirer/prompts";
 import { TOML } from "bun";
+import type { CompactionStrategy } from "./agent/compaction";
 
 export const DEFAULT_USE_24_HOUR_TIME: boolean = true;
 
@@ -70,7 +71,7 @@ export interface AutotubeConfig {
   */
 
   compactionStrategy?:
-    "summarize" | "truncate"; /* The strategy to use when compacting the history
+    CompactionStrategy; /* The strategy to use when compacting the history
 
   @defaultValue "truncate"
   @remarks
@@ -100,7 +101,7 @@ export const defaultConfig: AutotubeConfig = {
   autoRetryDelayMs: 1000,
   autoRetryDelayIncreaseFactor: 2,
   autoRetryMaxRetries: 10,
-  compaction: false,
+  compaction: true,
   compactionMaxTokens: 8192,
   compactionStrategy: "truncate",
   compactionTargetRatio: 0.5,
