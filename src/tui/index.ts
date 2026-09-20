@@ -237,16 +237,6 @@ export class Tui {
   set status(value: AgentStatus) {
     this._status = value;
     this.statusText.content = this.formatStatus();
-    if (
-      this._status === AgentStatus.Working ||
-      this._status === AgentStatus.ErrorRetrying
-    ) {
-      this.promptInput.focusable = false;
-      this.promptInput.blur();
-    } else {
-      this.promptInput.focusable = true;
-      this.promptInput.focus();
-    }
   }
 
   get status(): AgentStatus {
