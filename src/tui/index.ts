@@ -25,8 +25,9 @@ import { TuiNotification } from "./notification";
 export enum AgentStatus {
   Idle = "Idle",
   Working = "Working",
-  ErrorRetrying = "The agent encountered an error, retrying",
+  ErrorRetrying = "Retrying after Error",
   Failed = "Failed",
+  Compacting = "Compacting conversation",
 }
 
 interface TuiOptions {
