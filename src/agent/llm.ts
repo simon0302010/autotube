@@ -281,6 +281,13 @@ export class LLMSession {
       }
 
       if (recallNecessary) {
+        // This is done because some providers require the last message to be from the user
+        // and function_call_output is considered a model turn
+        this.history.push({
+          type: "message",
+          role: "user",
+          content: [{ type: "input_text", text: "Continue." }],
+        });
         yield* this.call();
       }
     } catch (e) {
