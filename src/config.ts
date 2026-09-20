@@ -115,14 +115,19 @@ export class ConfigManager {
   constructor(config?: AutotubeConfig, isHeadless?: boolean) {
     this.isHeadless = isHeadless ?? false;
     this._config = {
-      providers: DEFAULT_CONFIG.providers,
-      checkModels: DEFAULT_CONFIG.checkModels,
       ...config,
     };
   }
 
   get config(): AutotubeConfig {
-    return this._config;
+    return new Proxy(this._config, {
+      get: (target, prop: string | symbol) => {
+        const value = Reflect.get(target, prop);
+
+        if (value !== undefined) return value;
+        return Reflect.get(DEFAULT_CONFIG, prop);
+      },
+    });
   }
 
   private async setupProvider(): Promise<void> {
@@ -371,7 +376,7 @@ export class ConfigManager {
     const contextLength =
       this._config.compactionMaxTokens ??
       model?.context_length ??
-      DEFAULT_CONFIG.compactionMaxTokens!;
+      this.config.compactionMaxTokens!;
 
     return {
       baseUrl,
@@ -379,25 +384,16 @@ export class ConfigManager {
       model,
       autoRetry: this._config.autoRetry
         ? {
-            delayMs:
-              this._config.autoRetryDelayMs ?? DEFAULT_CONFIG.autoRetryDelayMs!,
-            delayIncreaseFactor:
-              this._config.autoRetryDelayIncreaseFactor ??
-              DEFAULT_CONFIG.autoRetryDelayIncreaseFactor!,
-            maxRetries:
-              this._config.autoRetryMaxRetries ??
-              DEFAULT_CONFIG.autoRetryMaxRetries!,
+            delayMs: this.config.autoRetryDelayMs!,
+            delayIncreaseFactor: this.config.autoRetryDelayIncreaseFactor!,
+            maxRetries: this.config.autoRetryMaxRetries!,
           }
         : undefined,
       compaction: this._config.autoRetry
         ? {
             maxTokens: contextLength,
-            strategy:
-              this._config.compactionStrategy ??
-              DEFAULT_CONFIG.compactionStrategy!,
-            targetRatio:
-              this._config.compactionTargetRatio ??
-              DEFAULT_CONFIG.compactionTargetRatio!,
+            strategy: this.config.compactionStrategy!,
+            targetRatio: this.config.compactionTargetRatio!,
           }
         : undefined,
     };
