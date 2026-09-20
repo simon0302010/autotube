@@ -13,11 +13,12 @@ import "./tools";
 import { AsyncQueue } from "../utils";
 import { isRetryableError } from "./retry";
 import { compact, type CompactionStrategy } from "./compaction";
+import type { ModelInfo } from "./models";
 
 export interface ApiSetup {
   apiKey: string;
   baseUrl: string;
-  model?: string;
+  model?: ModelInfo;
   autoRetry?: {
     delayMs: number;
     delayIncreaseFactor: number;
@@ -128,7 +129,7 @@ export class LLMSession {
     let responseStream;
     try {
       responseStream = await this.client.responses.stream({
-        model: this.apiSetup.model,
+        model: this.apiSetup.model?.id,
         input: this.history,
         tools: toolRegistry.getTools().map((tool) => tool.definition),
         max_output_tokens: 16384, // TODO: Find a better way to adjust this

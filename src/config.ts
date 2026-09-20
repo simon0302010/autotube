@@ -361,21 +361,22 @@ export class ConfigManager {
     if (!this._config.provider || !this._config.apiKey) return undefined;
 
     const provider = this._config.providers![this._config.provider];
+    const model = this.models?.data.find((model) => {
+      return model.id.trim() === this._config.model?.trim();
+    });
     const baseUrl = provider?.baseUrl;
     if (!baseUrl) return undefined;
 
     // Gets the contextLength from the model list
     const contextLength =
       this._config.compactionMaxTokens ??
-      this.models?.data.find((model) => {
-        return model.id.trim() === this._config.model?.trim();
-      })?.context_length ??
-      65536;
+      model?.context_length ??
+      DEFAULT_CONFIG.compactionMaxTokens!;
 
     return {
       baseUrl,
       apiKey: this._config.apiKey,
-      model: this._config.model,
+      model,
       autoRetry: this._config.autoRetry
         ? {
             delayMs:

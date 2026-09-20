@@ -20,6 +20,7 @@ import type {
 import { AgentFunctionCall } from "./messages/agentFunctionCall";
 import clipboard from "clipboardy";
 import { TuiNotification } from "./notification";
+import type { ModelInfo } from "../agent/models";
 
 // TODO: Improve this
 export enum AgentStatus {
@@ -32,7 +33,7 @@ export enum AgentStatus {
 
 interface TuiOptions {
   onPromptSend?: (prompt: string) => void;
-  modelName?: string;
+  model?: ModelInfo;
   getTokens?: () => number;
 }
 
@@ -46,7 +47,7 @@ export class Tui {
 
   private _status: AgentStatus;
   private statusText!: TextRenderable;
-  private modelName?: string;
+  private model?: ModelInfo;
 
   private configManager: ConfigManager;
   private onPromptSend?: (prompt: string) => void;
@@ -57,7 +58,7 @@ export class Tui {
     this.configManager = configManager;
     this.messages = [];
     this._status = AgentStatus.Idle;
-    this.modelName = options.modelName;
+    this.model = options.model;
     this.getTokens = options.getTokens;
   }
 
@@ -258,7 +259,6 @@ export class Tui {
   }
 
   private formatStatus(): string {
-    if (this.modelName) return `${this.status} – ${this.modelName}`;
-    else return this.status;
+    return `${this.status}${this.model ? ` – ${this.model.name ?? this.model.id}` : ""}${this.model && this.model.context_length ? ` – ${this.model.context_length} tokens context` : ""}`;
   }
 }
