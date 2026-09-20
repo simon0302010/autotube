@@ -7,6 +7,11 @@ interface ReadFileParams {
   path: string;
 }
 
+interface ReadFileImageResult {
+  isImage: true;
+  data: string;
+}
+
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"];
 const MIME_MAP: Record<string, string> = {
   ".png": "image/png",
@@ -16,7 +21,10 @@ const MIME_MAP: Record<string, string> = {
   ".webp": "image/webp",
 };
 
-export const readFileTool: ToolMetadata<ReadFileParams, string> = {
+export const readFileTool: ToolMetadata<
+  ReadFileParams,
+  string | ReadFileImageResult
+> = {
   definition: {
     type: "function",
     name: "readFile",
@@ -34,7 +42,9 @@ export const readFileTool: ToolMetadata<ReadFileParams, string> = {
     },
     strict: true,
   },
-  execute: async (payload: ReadFileParams): Promise<ToolResult<string>> => {
+  execute: async (
+    payload: ReadFileParams,
+  ): Promise<ToolResult<string | ReadFileImageResult>> => {
     const resolvedPath = path.resolve(payload.path);
     const file = Bun.file(resolvedPath);
 
@@ -49,12 +59,15 @@ export const readFileTool: ToolMetadata<ReadFileParams, string> = {
 
     if (IMAGE_EXTENSIONS.includes(extension)) {
       const buffer = await file.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      const base64 = Buffer.from(buffer).toString("base64");
       const mime = MIME_MAP[extension] ?? "image/png";
 
       return {
         success: true,
-        data: `data:${mime};base64,${base64}`,
+        data: {
+          isImage: true,
+          data: `data:${mime};base64,${base64}`,
+        },
       };
     }
 
