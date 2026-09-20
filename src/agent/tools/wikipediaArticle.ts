@@ -153,7 +153,18 @@ export const wikipediaArticleTool: ToolMetadata<ArticleParams, ArticleResult> =
 
       const imageUrl = `https://en.wikipedia.org/w/api.php?${imageParams}`;
 
-      const imageResponse = await fetch(imageUrl);
+      const imageResponse = await fetch(imageUrl, {
+        headers: {
+          "User-Agent": "Autotube/1.1 (utkrishth@utkrishth.in)",
+        },
+      });
+
+      if (!imageResponse.ok) {
+        return {
+          success: false,
+          error: `Wikipedia Images API error ${imageResponse.status} ${imageResponse.statusText}`,
+        };
+      }
       const imageData = (await imageResponse.json()) as ImagesResponse;
 
       const images: ArticleImage[] = [];
