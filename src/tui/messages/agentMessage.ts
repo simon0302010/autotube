@@ -33,6 +33,7 @@ export class AgentMessage {
 
   async addChunk(chunk: string) {
     if (this._renderable.streaming) this._renderable.content += chunk;
+    this._renderable.content = this._renderable.content.replace("<br>", "\n");
   }
 
   async finishStream() {

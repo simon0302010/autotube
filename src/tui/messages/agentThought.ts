@@ -65,6 +65,7 @@ export class AgentThought {
 
   async addChunk(chunk: string) {
     if (this.thoughtText.streaming) this.thoughtText.content += chunk;
+    this.thoughtText.content = this.thoughtText.content.replace("<br>", "\n");
   }
 
   async finishStream() {

@@ -6,7 +6,6 @@ import { AgentStatus, Tui } from "./tui";
 import { TOML } from "bun";
 import envPaths, { type Paths } from "env-paths";
 import path from "node:path";
-import { isDeepStrictEqual } from "node:util";
 import { program } from "commander";
 
 export const ENV_PATHS: Paths = envPaths("autotube", { suffix: "" });
@@ -42,7 +41,7 @@ async function main() {
   await configManager.validate();
 
   // Asks the user whether to save the config if the config has been changed
-  if (!headless && !isDeepStrictEqual(config, configManager.config))
+  if (!headless && configManager.configDifferentFrom(config))
     await configManager.askSaveConfig(configPath);
 
   const apiSetup = await configManager.getApiSetup();

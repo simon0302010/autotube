@@ -6,8 +6,7 @@ import { defaultProviders, type Providers } from "./agent/providers";
 import { confirm, input, password, search, select } from "@inquirer/prompts";
 import { TOML } from "bun";
 import type { CompactionStrategy } from "./agent/compaction";
-
-export const DEFAULT_USE_24_HOUR_TIME: boolean = true;
+import { isDeepStrictEqual } from "node:util";
 
 export interface AutotubeConfig {
   providers?: Providers; /** @defaultValue {@link ./agent/providers#defaultProviders} */
@@ -160,7 +159,7 @@ export class ConfigManager {
     let apiKeyVar: string | undefined;
 
     if (this._config.provider) {
-      const provider = this._config.providers?.[this._config.provider];
+      const provider = this.config.providers?.[this._config.provider];
       if (provider?.apiKeyVar) {
         const envVar = process.env[provider?.apiKeyVar];
         if (envVar && envVar != "") {
@@ -194,7 +193,7 @@ export class ConfigManager {
       throw new Error("No provider selected");
     }
 
-    const provider = this._config.providers![selectedProvider];
+    const provider = this.config.providers![selectedProvider];
 
     if (!provider) {
       throw new Error("Provider not found");
@@ -306,6 +305,10 @@ export class ConfigManager {
     }
   }
 
+  configDifferentFrom(config: AutotubeConfig): boolean {
+    return !isDeepStrictEqual(config, this._config);
+  }
+
   async saveConfig(path: string): Promise<void> {
     await mkdir(ENV_PATHS.config, { recursive: true });
     const config = TOML.stringify(this._config);
@@ -370,7 +373,7 @@ export class ConfigManager {
   async getApiSetup(): Promise<ApiSetup | undefined> {
     if (!this._config.provider || !this._config.apiKey) return undefined;
 
-    const provider = this._config.providers![this._config.provider];
+    const provider = this.config.providers![this._config.provider];
     const model = this.models?.data.find((model) => {
       return model.id.trim() === this._config.model?.trim();
     });

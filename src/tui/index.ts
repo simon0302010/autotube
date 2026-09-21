@@ -9,7 +9,7 @@ import {
 } from "@opentui/core";
 import { TuiButton } from "./button";
 import { UserMessage } from "./messages/userMessage";
-import { DEFAULT_USE_24_HOUR_TIME, type ConfigManager } from "../config";
+import { DEFAULT_CONFIG, type ConfigManager } from "../config";
 import { AgentMessage } from "./messages/agentMessage";
 import { AgentThought } from "./messages/agentThought";
 import type {
@@ -192,7 +192,8 @@ export class Tui {
 
     if (
       this.status === AgentStatus.Working ||
-      this.status === AgentStatus.ErrorRetrying
+      this.status === AgentStatus.ErrorRetrying ||
+      this.status === AgentStatus.Compacting
     ) {
       this.displayNotification("The agent is still working", 3000);
       return;
@@ -213,7 +214,8 @@ export class Tui {
     const userMessage = new UserMessage(this.renderer, {
       content,
       use24HourTime:
-        this.configManager.config.use24HourTime ?? DEFAULT_USE_24_HOUR_TIME,
+        this.configManager.config.use24HourTime ??
+        DEFAULT_CONFIG.use24HourTime!,
     });
 
     this.messages.push(userMessage);
