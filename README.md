@@ -5,10 +5,21 @@ Please note that we are just starting development and got a long way to go.
 
 Features so far:
 
-- A really basic TUI
+- A basic TUI
 - AI requests working
-- Some tools implemented
+- Tools implemented
 - A config system
+
+The agent has access to these tools so far:
+
+- wikipediaSearch: search wikipedia for articles
+- fetchWikipediaArticle: fetch a wikipedia article's text and available images
+- downloadWikipediaImage: download a specific image off of wikipedia
+
+- readFile: read files.... 🥺🥺🥺🥺🥺🚀🚀✨✨✨
+
+- webFetch: fetch a url's content via exa proxy
+- webSearch: search the web via exa proxy
 
 To install dependencies:
 
