@@ -155,6 +155,30 @@ export class Tui {
 
     if (!prompt && prompt === "") return;
 
+    if (prompt.toLowerCase().includes("kaboom")) {
+      // I genuinely don't know why I put this here, you can remove it if you want to, I just wanted to fuck around
+      console.error("kaboom kablow your session fucking EXPLODED");
+      process.exit(1);
+    }
+
+    if (
+      prompt
+        .toLowerCase()
+        .includes("Oh you wouldn't download a The Bee Movie Script, would you?")
+    ) {
+      // Also just fucking around but please keep this
+      const bee = await Bun.file("src/utils/bee.txt").text();
+      this.promptInput.clearSelection();
+      this.promptInput.clear();
+      const agentMessage = new AgentMessage(this.renderer, {
+        content: bee,
+        stream: false,
+      });
+      this.messages.push(agentMessage);
+      this.messageArea.add(agentMessage.renderable);
+      return;
+    }
+
     if (prompt.startsWith(":")) {
       const [command, _input] = prompt.split(" ", 1);
       if (runCommand(COMMAND_LIST, command!.substring(1), _input ?? "", this)) {
