@@ -86,6 +86,13 @@ export interface AutotubeConfig {
   Only relevant if `compaction` is true.
   */
 
+  compactionMaxAttempts?: number; /** The maximum number of attempts to compact the history
+
+  @defaultValue 8
+  @remarks
+  Only relevant if `compaction` is true.
+  */
+
   use24HourTime?: boolean; /** Whether to use the 24-hour time format in the TUI
 
   @remarks
@@ -104,6 +111,7 @@ export const DEFAULT_CONFIG: AutotubeConfig = {
   compaction: true,
   compactionStrategy: "truncate",
   compactionTargetRatio: 0.5,
+  compactionMaxAttempts: 8,
 };
 
 // TODO: Integrate prompts with dedicated TUI
@@ -394,6 +402,7 @@ export class ConfigManager {
             maxTokens: contextLength,
             strategy: this.config.compactionStrategy!,
             targetRatio: this.config.compactionTargetRatio!,
+            maxAttempts: this.config.compactionMaxAttempts!,
           }
         : undefined,
     };

@@ -28,6 +28,7 @@ export interface ApiSetup {
     maxTokens: number;
     strategy: CompactionStrategy;
     targetRatio: number; // How much of maxTokens we should achieve to stop compacting
+    maxAttempts: number;
   };
 }
 
@@ -56,8 +57,6 @@ export type StreamableItem =
   | StreamableReasoning
   | PromisedFunctionCall
   | ResponseOutputItem;
-
-const MAX_COMPACTION_ATTEMPTS = 8; // TODO: make this configurable
 
 export class LLMSession {
   private apiSetup: ApiSetup;
@@ -108,7 +107,7 @@ export class LLMSession {
         compacted.tokens >
           this.apiSetup.compaction.maxTokens *
             this.apiSetup.compaction.targetRatio &&
-        attempts < MAX_COMPACTION_ATTEMPTS
+        attempts < this.apiSetup.compaction.maxAttempts
       ) {
         compacted = await compact(
           compacted.history,
