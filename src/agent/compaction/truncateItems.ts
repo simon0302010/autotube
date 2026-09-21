@@ -1,4 +1,7 @@
-import type { ResponseInput } from "openai/resources/responses/responses.mjs";
+import type {
+  ResponseInput,
+  ResponseInputMessageContentList,
+} from "openai/resources/responses/responses.mjs";
 import { calculateItemTokens, IMAGE_CHAR_EQUIVALENT } from "./tokenizeItems";
 
 // TODO: This file has horrible naming. Add comments and rename things.
@@ -127,7 +130,7 @@ export function truncateItems(
 
           itemTokens -= newPartTokens - finalPartTokens;
           // TODO: Fix typing here
-          item.content = newParts as any;
+          item.content = newParts as ResponseInputMessageContentList;
         }
       } else if ("output" in item && typeof item.output === "string") {
         const targetItemTokens = Math.round(itemTokens * PHI_INV);
