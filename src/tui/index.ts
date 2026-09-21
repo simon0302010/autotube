@@ -162,9 +162,9 @@ export class Tui {
     }
 
     if (
-      prompt
-        .toLowerCase()
-        .includes("Oh you wouldn't download a The Bee Movie Script, would you?")
+      prompt.includes(
+        "Oh you wouldn't download a The Bee Movie Script, would you?",
+      )
     ) {
       // Also just fucking around but please keep this
       const bee = await Bun.file("src/utils/bee.txt").text();
