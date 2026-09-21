@@ -21,13 +21,16 @@ export function truncateItems(
   history: ResponseInput;
   tokens: number;
 } {
+  // Approximates how many tokens each item uses
   const tokenAllocations = calculateItemTokens(history, tokens);
 
   const meanTokens =
     tokenAllocations.reduce((a, b) => a + b, 0) / tokenAllocations.length;
+
+  // Anything larger than this will be truncated
   const largeContentThreshold = meanTokens / PHI_INV;
 
-  let newTokens = 0;
+  let newTokens = 0; /** The new number of tokens after truncation */
   for (const [index, item] of history.entries()) {
     let itemTokens = tokenAllocations[index]!;
     if (itemTokens > largeContentThreshold) {
@@ -40,8 +43,12 @@ export function truncateItems(
           const removeCount = itemTokens - targetItemTokens;
           const skipCount = targetItemTokens - removeCount;
 
-          const skipChars = Math.floor((skipCount / itemTokens) * item.content.length);
-          const removeChars = Math.floor((removeCount / itemTokens) * item.content.length);
+          const skipChars = Math.floor(
+            (skipCount / itemTokens) * item.content.length,
+          );
+          const removeChars = Math.floor(
+            (removeCount / itemTokens) * item.content.length,
+          );
 
           item.content =
             item.content.substring(0, skipChars) +
@@ -101,12 +108,12 @@ export function truncateItems(
             } else if (newPartTokens + partToken > skipCount + removeCount) {
               // This part is too big to be added directly. Manually truncate it (from the end)
               if ("text" in part) {
-                const space = (newPartTokens + partToken) - (skipCount + removeCount);
+                const space =
+                  newPartTokens + partToken - (skipCount + removeCount);
                 const keep = space / partToken;
                 const keepChars = Math.floor(keep * part.text.length);
                 part.text =
-                  "[...]" +
-                  part.text.substring(part.text.length - keepChars);
+                  "[...]" + part.text.substring(part.text.length - keepChars);
                 newParts.push(part);
                 finalPartTokens += Math.floor(keep * partToken);
               } else {
@@ -127,8 +134,12 @@ export function truncateItems(
         const removeCount = itemTokens - targetItemTokens;
         const skipCount = targetItemTokens - removeCount;
 
-        const skipChars = Math.floor((skipCount / itemTokens) * item.output.length);
-        const removeChars = Math.floor((removeCount / itemTokens) * item.output.length);
+        const skipChars = Math.floor(
+          (skipCount / itemTokens) * item.output.length,
+        );
+        const removeChars = Math.floor(
+          (removeCount / itemTokens) * item.output.length,
+        );
 
         item.output =
           item.output.substring(0, skipChars) +
