@@ -7,6 +7,8 @@ import { confirm, input, password, search, select } from "@inquirer/prompts";
 import { TOML } from "bun";
 import type { CompactionStrategy } from "./agent/compaction";
 
+const DEFAULT_USE_24_HOUR_TIME: boolean = true;
+
 export interface AutotubeConfig {
   providers?: Providers; /** @defaultValue {@link ./agent/providers#defaultProviders} */
   provider?: string; /** The provider to use
