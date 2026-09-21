@@ -17,3 +17,4 @@ export { downloadWikipediaImageTool } from "./wikipediaImage";
 export { webSearchTool } from "./webSearch";
 export { readFileTool } from "./readFile";
 export { webFetchTool } from "./webFetch";
+export { videoOutlineTool } from "./videoOutline";
