@@ -49,7 +49,7 @@ async function main() {
   if (!apiSetup) throw new Error("API setup failed");
 
   const session = new LLMSession(apiSetup, configManager, (message: string) => {
-    tui.displayNotification(message, 5000);
+    tui.displayNotification(message, 3000);
   });
 
   const tui = new Tui(configManager, {
