@@ -7,8 +7,6 @@ import { confirm, input, password, search, select } from "@inquirer/prompts";
 import { TOML } from "bun";
 import type { CompactionStrategy } from "./agent/compaction";
 
-export const DEFAULT_USE_24_HOUR_TIME: boolean = true;
-
 export interface AutotubeConfig {
   providers?: Providers; /** @defaultValue {@link ./agent/providers#defaultProviders} */
   provider?: string; /** The provider to use
@@ -112,6 +110,7 @@ export const DEFAULT_CONFIG: AutotubeConfig = {
   compactionStrategy: "truncate",
   compactionTargetRatio: 0.5,
   compactionMaxAttempts: 8,
+  use24HourTime: true,
 };
 
 // TODO: Integrate prompts with dedicated TUI
@@ -336,7 +335,7 @@ export class ConfigManager {
       await this.validateModel();
     }
 
-    if (this.config.use24HourTime == undefined) {
+    if (this._config.use24HourTime === undefined) {
       await this.setupTimeFormat();
     }
   }
@@ -350,10 +349,6 @@ export class ConfigManager {
     }
     if (!this.config.model) {
       throw new Error("No model specified");
-    }
-
-    if (this.config.use24HourTime == undefined) {
-      this._config.use24HourTime = DEFAULT_USE_24_HOUR_TIME;
     }
 
     if (this.config.checkModels) {
