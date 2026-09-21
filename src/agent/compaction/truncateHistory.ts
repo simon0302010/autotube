@@ -1,6 +1,4 @@
-import type {
-  ResponseInput,
-} from "openai/resources/responses/responses.mjs";
+import type { ResponseInput } from "openai/resources/responses/responses.mjs";
 import { calculateItemTokens } from "./tokenizeItems";
 
 const PHI_INV = (Math.sqrt(5) - 1) / 2;
@@ -49,21 +47,21 @@ export function truncateHistory(
   const outputIds = new Set<string>();
   for (const item of newHistory) {
     if ("type" in item && item.type === "function_call") {
-      const id = (item as any).call_id || (item as any).id;
+      const id = item.call_id || item.id;
       if (id) callIds.add(id);
     } else if ("type" in item && item.type === "function_call_output") {
-      const id = (item as any).call_id;
+      const id = item.call_id;
       if (id) outputIds.add(id);
     }
   }
 
   const finalHistory = newHistory.filter((item) => {
     if ("type" in item && item.type === "function_call") {
-      const id = (item as any).call_id || (item as any).id;
+      const id = item.call_id || item.id;
       return id ? outputIds.has(id) : true;
     }
     if ("type" in item && item.type === "function_call_output") {
-      const id = (item as any).call_id;
+      const id = item.call_id;
       return id ? callIds.has(id) : true;
     }
     return true;
